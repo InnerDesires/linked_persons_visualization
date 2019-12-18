@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="71e5d379-acfa-4ace-b269-370fcffef2ab" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/012003.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/012003.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/javascript/mojo/js/source/go.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/javascript/mojo/js/source/lnkd_prsn.js" beforeDir="false" afterPath="$PROJECT_DIR$/javascript/mojo/js/source/lnkd_prsn.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/javascript/mojo/js/source/lnkd_prsnDropZones.js" beforeDir="false" afterPath="$PROJECT_DIR$/javascript/mojo/js/source/lnkd_prsnDropZones.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/javascript/mojo/js/source/lnkd_prsnEditorModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/javascript/mojo/js/source/lnkd_prsnEditorModel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/style/global.css" beforeDir="false" afterPath="$PROJECT_DIR$/style/global.css" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1UCdP3ThPcp9w319pId6Pd8tv2L" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="MTConfigurable" />
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="71e5d379-acfa-4ace-b269-370fcffef2ab" name="Default Changelist" comment="" />
+      <created>1574864483561</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1574864483561</updated>
+      <workItem from="1574864484700" duration="87031000" />
+      <workItem from="1575616838996" duration="1124000" />
+      <workItem from="1575621663767" duration="190000" />
+      <workItem from="1575621866987" duration="144000" />
+      <workItem from="1575622034317" duration="27815000" />
+      <workItem from="1575892645215" duration="10225000" />
+      <workItem from="1576480339788" duration="42287000" />
+      <workItem from="1576653888334" duration="4566000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="414" y="174" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1575876643811">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="414" y="174" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1575876643811" />
+    <state x="717" y="389" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1575384570595">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="717" y="389" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.1920.1040@0.0.1920.1040" timestamp="1575384570595" />
+    <state x="923" y="304" key="FileChooserDialogImpl" timestamp="1575621842870">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="923" y="304" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1575621842870" />
+    <state x="694" y="145" key="RollbackChangesDialog" timestamp="1576484237219">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="694" y="145" key="RollbackChangesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1576484237219" />
+    <state x="357" y="185" key="SettingsEditor" timestamp="1576669411523">
+      <screen x="0" y="0" width="1858" height="1080" />
+    </state>
+    <state x="357" y="185" key="SettingsEditor/0.0.1858.1080@0.0.1858.1080" timestamp="1576669411523" />
+    <state x="369" y="178" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1575878306287" />
+    <state x="657" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1576653890766">
+      <screen x="0" y="0" width="1858" height="1080" />
+    </state>
+    <state x="657" y="331" key="com.intellij.ide.util.TipDialog/0.0.1858.1080@0.0.1858.1080" timestamp="1576653890766" />
+    <state x="679" y="319" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1576480352613" />
+    <state x="768" y="435" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1574870473281">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="768" y="435" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040" timestamp="1574870473281" />
+    <state x="647" y="101" width="626" height="837" key="find.popup" timestamp="1576484744763">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="647" y="101" width="626" height="837" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1576484744763" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1576572423097">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1576572423097" />
+  </component>
+</project>
