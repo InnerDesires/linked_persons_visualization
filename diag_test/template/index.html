@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Diagram Testing Enviroment</title>
+
+
+    <script src="js/timelogger.js"></script>
+    <script src="data/data_new.js"></script>
+    <script src="data/data.js"></script>
+    <script src="data/dataC4X.js"></script>
+    <script src="js/third_party/jquery.js"></script>
+    <script src="js/third_party/d3.js"></script>
+    <script src="js/graph.js"></script>
+    <script src="js/third_party/swal.js"></script>
+    <script src="js/third_party/go.js"></script>
+    <script src="js/third_party/searchbox.js"></script>
+    <script src="js/scenario.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/lnkd_prsn.js"></script>
+    <script src="js/facade.js"></script>
+    <script src="lnkd_prsn_vis_icons/images.js"></script>
+
+    <link rel="stylesheet" href="stylesheets/style.css">
+</head>
+
+<body>
+    <div class="container h-100">
+        <div class="left h-100">
+            <div>
+                <h3>Середовище тестування візуалізації</h3>
+                <hr>
+            </div>
+            <div class="util-block">
+                <button type="button" id="beginScenario"  class="utils">Почати</button>
+                <button type="button" id="showAll"  class="utils">Відобразити всі дані</button>
+                <button type="button" id="deleteDiagram"  class="utils">Очистити діаграму</button>
+                <button type="button" id="dataInfo"  class="utils">Інформація по даним</button>
+            </div>
+            <hr>
+            <div class="util-block">
+                <p class="selectHeader">Спосіб пошуку шляхів між двома сутностями</p>
+                <div>
+                    <select id="searchType" class="typeSelection" size="2">
+                        <option name="dfs">Пошук у глибину</option name>
+                        <option selected name="bfs">Пошук у ширину</option>
+                    </select>
+                </div>
+            </div>
+            <div class="util-block">
+                <div>
+                    <label for="maxPathCount">Макс. шляхів:</label>
+                    <input type="number" min="1" step="1" max="20" value="5" id="maxPathCountLabel">
+                    <input type="range" min="1" step="1" max="20" value="5" name="maxPathCount" id="maxPathCount">
+                </div>
+            </div>
+            <hr>
+            <div class="util-block">
+                <p class="selectHeader">Особи, які демонструються у випадку вибору однієї сутності</p>
+                <div>
+                    <select id="oneNodeShowType" class="typeSelection" size="2">
+                        <option selected name="oneEdge">Безпосередні особи</option name>
+                        <option name="all">Всі особи</option>
+                    </select>
+                </div>
+            </div>
+            
+        </div>
+        <div class=" right w-100 h-100 ">
+            <div id="gojs" class=" w-100 h-100 ">
+            </div>
+        </div>
+    </div>
+</body
