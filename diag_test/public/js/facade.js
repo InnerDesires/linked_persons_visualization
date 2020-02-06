@@ -102,7 +102,6 @@ class Facade {
             return uniqueIDs.includes(link['K0201']) && uniqueIDs.includes(link['K0202']);
         });
 
-
         this.renderer = new Renderer(dataToUse, this.HTMLElementId);
     }
 
@@ -158,7 +157,7 @@ class Facade {
             }
         }
 
-        // as we have to return filtered data array, and right now we are only having indces of link rows that can stay 
+        // as we have to return the filtered data array, and right now we are only having indices of link rows that can stay 
         // we need to iterate throught the "unique" links indices and push corresponding data array elements to the resulting array
         let toReturn = [];
         for (let key in currentState) {

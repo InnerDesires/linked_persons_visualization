@@ -18,7 +18,12 @@ class TimeLogger {
             _duration = timeStamp - this.labels[this.labels.length - 1].time;
         }
 
-        this.labels.push({ duration: _duration, label: _label, durationFromBeginning: _durationFromBeginning, time: timeStamp })
+        this.labels.push({
+            duration: _duration,
+            label: _label,
+            durationFromBeginning: _durationFromBeginning,
+            time: timeStamp
+        })
     }
 
     showReport(digitsAfterDot = 3) {

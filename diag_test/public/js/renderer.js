@@ -505,24 +505,65 @@ class Renderer {
                     routing: go.Link.Orthogonal,
                     curve: go.Link.JumpOver,
                     corner: 10,
-                    toShortLength: 4,
-                    fromShortLength: 4,
-                    layerName: "Background"
+                    layerName: "Background",
+                    fromEndSegmentLength: 60,
+                    toEndSegmentLength: 60
                 },
-/*                 new go.Binding("toShortLength", 'T0901', T0901 => T0901 / 3),
- */                new go.Binding("fromShortLength", 'T0901', T0901 => T0901 / 4),
-                _(go.Shape,
-                    {
-                        opacity: 0.8,
-                        strokeWidth: 4,
-                        stroke: "#f79d91"
-                    },
+                new go.Binding("fromShortLength", 'T0901', T0901 => {
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 7
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 15
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 27
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 30
+                    }
+                    return 1;
+                }),
+                new go.Binding("fromEndSegmentLength", 'T0901', T0901 => {
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 10
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 20
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 25
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 40
+                    }
+                    return 1;
+                }),
+                new go.Binding("toEndSegmentLength", 'T0901', T0901 => {
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 10
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 20
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 25
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 40
+                    }
+                    return 1;
+                }),
+                _(go.Shape, {
+                    opacity: 0.8,
+                    strokeWidth: 3,
+                    stroke: "#f79d91"
+                },
                     new go.Binding('strokeWidth', 'T0901', (T0901 = 4) => {
                         let res = parseInt(T0901, 10) / 4;
                         return res < 1 ? 1 : res;
                     }
-                    )
-                ),
+                    )),
                 _(go.Shape, {
                     toArrow: "",
                     fill: "#f79d91",
@@ -534,8 +575,19 @@ class Renderer {
                     stroke: "#f79d91",
                     scale: 2
                 }, new go.Binding("scale", 'T0901', (T0901) => {
-                    let res = T0901 / 30;
-                    return res < 1 ? 1 : res;
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 1
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 2
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 3
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 5
+                    }
+                    return 1
                 })),
                 _(go.Panel, "Auto",
                     _(go.Shape, "RoundedRectangle", // the label background, which becomes transparent around the edges
@@ -543,13 +595,18 @@ class Renderer {
                             fill: "#f79d91",
                             stroke: null
                         }),
-                    _(go.TextBlock, "transition",  // the label text
+                    _(go.TextBlock, "pr",  // the label text
                         {
                             textAlign: "center",
-                            margin: 5,
+                            margin: 5
                         },
                         // editing the text automatically updates the model data
-                        new go.Binding("text", 'T0901'))
+                        new go.Binding("text", 'T0901', (t0901) => {
+                            if (!t0901) {
+                                return "";
+                            }
+                            return `${t0901}%`
+                        }))
                 ),
                 { // this tooltip shows the name and picture of the kitten
                     toolTip: linkAdorment
@@ -562,10 +619,52 @@ class Renderer {
                     routing: go.Link.Orthogonal,
                     curve: go.Link.JumpOver,
                     corner: 10,
-                    layerName: "Background"
+                    layerName: "Background",
+                    fromEndSegmentLength: 60,
+                    toEndSegmentLength: 60
                 },
-                new go.Binding("fromShortLength", 'T0901', T0901 => 40),
-                new go.Binding("toShortLength", 'T0901', T0901 => 80),
+                new go.Binding("fromShortLength", 'T0901', T0901 => {
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 7
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 15
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 27
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 30
+                    }
+                }),
+                new go.Binding("fromEndSegmentLength", 'T0901', T0901 => {
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 10
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 15
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 23
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 40
+                    }
+                }),
+                new go.Binding("toEndSegmentLength", 'T0901', T0901 => {
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 10
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 15
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 23
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 40
+                    }
+                }),
                 _(go.Shape, {
                     opacity: 0.8,
                     strokeWidth: 3,
@@ -587,9 +686,19 @@ class Renderer {
                     stroke: "#8d9dd0",
                     scale: 2
                 }, new go.Binding("scale", 'T0901', (T0901) => {
+                    if (T0901 > 0 && T0901 <= 25) {
+                        return 1
+                    }
+                    if (T0901 > 25 && T0901 <= 50) {
+                        return 2
+                    }
+                    if (T0901 > 50 && T0901 <= 75) {
+                        return 3
+                    }
+                    if (T0901 > 75 && T0901 <= 100) {
+                        return 5
+                    }
                     return 1
-                    let res = T0901 / 30;
-                    return res < 1 ? 1 : res;
                 })),
                 _(go.Panel, "Auto",
                     _(go.Shape, "RoundedRectangle", // the label background, which becomes transparent around the edges
@@ -603,7 +712,12 @@ class Renderer {
                             margin: 5
                         },
                         // editing the text automatically updates the model data
-                        new go.Binding("text", 'T0901'))
+                        new go.Binding("text", 'T0901', (t0901) => {
+                            if (!t0901) {
+                                return "";
+                            }
+                            return `${t0901}%`
+                        }))
                 ),
                 { // this tooltip shows the name and picture of the kitten
                     toolTip: linkAdorment
@@ -618,7 +732,7 @@ class Renderer {
                     layerName: "Background"
                 },
                 _(go.Shape, {
-                    strokeWidth: 4,
+                    strokeWidth: 2,
                     stroke: "#f9d491"
                 }),
                 { // this tooltip shows the name and picture of the kitten
