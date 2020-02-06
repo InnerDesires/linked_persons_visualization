@@ -1,4 +1,4 @@
-(function () {
+(function () { 
     if (!mstrmojo.plugins.lnkd_prsn) {
         mstrmojo.plugins.lnkd_prsn = {};
     }
@@ -15,6 +15,16 @@
             scriptClass: "mstrmojo.plugins.lnkd_prsn.lnkd_prsnEditorModel",
             cssClass: "lnkd_prsneditormodel",
             getCustomProperty: function getCustomProperty(){
+
+
+
+
+
+
+
+
+
+
 
 }
 })}());

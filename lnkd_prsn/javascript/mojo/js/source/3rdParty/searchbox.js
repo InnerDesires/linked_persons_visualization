@@ -7,7 +7,7 @@ function autocomplete(inp, arr) {
         var a, b, i, val = this.value;
         /*close any already open lists of autocompleted values*/
         closeAllLists();
-        if (!val) { return false;}
+        if (!val) { return false; }
         currentFocus = -1;
         /*create a DIV element that will contain the items (values):*/
         a = document.createElement("DIV");
@@ -16,7 +16,8 @@ function autocomplete(inp, arr) {
         /*append the DIV element as a child of the autocomplete container:*/
         this.parentNode.appendChild(a);
         /*for each item in the array...*/
-        for (i = 0; i < arr.length; i++) {
+        let appendedCount = 0;
+        for (i = 0; i < arr.length && appendedCount < 20; i++) {
             /*check if the item starts with the same letters as the text field value:*/
             //if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
             if (arr[i].toUpperCase().includes(val.toUpperCase())) {
@@ -35,6 +36,7 @@ function autocomplete(inp, arr) {
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
                 });
+                appendedCount++;
                 a.appendChild(b);
             }
         }
@@ -64,6 +66,7 @@ function autocomplete(inp, arr) {
             }
         }
     });
+
     function addActive(x) {
         /*a function to classify an item as "active":*/
         if (!x) return false;
@@ -74,6 +77,7 @@ function autocomplete(inp, arr) {
         /*add class "autocomplete-active":*/
         x[currentFocus].classList.add("autocomplete-active");
     }
+
     function removeActive(x) {
         /*a function to remove the "active" class from all autocomplete items:*/
         for (var i = 0; i < x.length; i++) {
@@ -92,7 +96,7 @@ function autocomplete(inp, arr) {
         }
     }
     /*execute a function when someone clicks in the document:*/
-    document.addEventListener("click", function (e) {
+    document.addEventListener("click", function(e) {
         closeAllLists(e.target);
     });
 

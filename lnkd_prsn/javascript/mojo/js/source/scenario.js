@@ -1,4 +1,5 @@
 async function scenario(autocompleteHelp) {
+    const CUSTOM_INPUT_ID = "eoijgp[q34jihv89yu59hjegpuuh";
     let scenario = {
         typeOneSelected: false,
         typeTwoSelected: false,
@@ -34,12 +35,7 @@ async function scenario(autocompleteHelp) {
             confirmButtonText: 'Продовжити',
             showCancelButton: true,
             cancelButtonText: 'Відміна побудови візуалізації',
-            showClass: {
-                popup: 'animated fadeInRight faster'
-            },
-            hideClass: {
-                popup: 'animated fadeOutLeft faster'
-            }
+
         });
 
         let visType = res.value;
@@ -52,21 +48,19 @@ async function scenario(autocompleteHelp) {
 
         async function getK20(title, propertyToChange, searchHelp) {
             return await Swal.fire({
-                /*title: 'Ідентифікатор K020 основної особи діаграми',*/
                 title: title,
                 icon: 'question',
-                html: `<input type="text" id="customId" class="swal2-input">`,
+                html: `<input type="text" id="${CUSTOM_INPUT_ID}" class="swal2-input">`,
                 confirmButtonText: "Продовжити",
                 showCancelButton: true,
                 cancelButtonText: 'Відмінити та почати спочатку',
-                showClass: {
-                    popup: 'animated fadeIn'
-                },
+
                 onOpen: () => {
-                    autocomplete(document.getElementById('customId'), searchHelp)
+                    autocomplete(document.getElementById(CUSTOM_INPUT_ID), searchHelp)
                 },
                 onClose: () => {
-                    let customInput = document.getElementById('customId');
+                    let customInput = document.getElementById(CUSTOM_INPUT_ID);
+
                     scenario[propertyToChange] = customInput ? customInput.value : '';
                 },
             });
@@ -92,17 +86,12 @@ async function scenario(autocompleteHelp) {
                 confirmButtonText: 'Почати побудову візуалізації',
                 showCancelButton: true,
                 cancelButtonText: 'Відміна',
-                showClass: {
-                    popup: 'animated fadeIn'
-                },
-                hideClass: {
-                    popup: 'animated fadeOutLeft'
-                }
+
             });
             if (visualizationBuildingConfirmation.value === true) {
                 return {
                     type: 'singleEntity',
-                    mainEntityId: scenario.mainEntityId
+                    mainEntityId: scenario.mainEntityId.substring(0, 10)
                 }
             } else {
                 scenario.setAllToFalse();
@@ -126,19 +115,13 @@ async function scenario(autocompleteHelp) {
                     confirmButtonText: 'Почати побудову візуалізації',
                     showCancelButton: true,
                     cancelButtonText: 'Відмінити та почати спочатку',
-                    showClass: {
-                        popup: 'animated fadeIn'
-                    },
-                    hideClass: {
-                        popup: 'animated fadeOutLeft faster'
-                    }
                 });
                 // If user pressed Continue
                 if (visualizationBuildingConfirmation.value === true) {
                     return {
                         type: 'chain',
-                        mainEntityId: scenario.mainEntityId,
-                        secondEntityId: scenario.secondEntityId
+                        mainEntityId: scenario.mainEntityId.substring(0, 10),
+                        secondEntityId: scenario.secondEntityId.substring(0, 10)
                     }
                 } else {
                     scenario.setAllToFalse();
@@ -146,7 +129,7 @@ async function scenario(autocompleteHelp) {
             }
         }
     }
-    return  {
+    return {
         type: 'canceled',
         mainEntityId: null,
         secondEntityId: null
