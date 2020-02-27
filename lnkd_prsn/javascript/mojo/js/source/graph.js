@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Class representing a Graph
  */
@@ -44,8 +45,8 @@ class Graph {
      */
 
     findAvailableVertices(initialVertexId) {
-        if (!initialVertexId || typeof initialVertexId !== "string" || !this.uniqueIds.includes(initialVertexId)) {
-            console.log('error - returning undefined');
+        if (!initialVertexId || typeof initialVertexId !== 'string' || !this.uniqueIds.includes(initialVertexId)) {
+            alert('@findAvailableVertices: error - returning undefined');
             return;
         }
 
@@ -63,9 +64,70 @@ class Graph {
             });
         }
 
+
         traverse(initialVertexId);
 
         return visited;
+    }
+
+    getRelativePriorities(mainEntityId) {
+        if (typeof mainEntityId !== 'string') {
+            return undefined;
+        }
+
+        let nodes = this.nodes;
+        let dict = this.dict;
+        let uniqueIds = this.uniqueIds;
+
+        let priority = 1;
+        let prioritiesDict = {
+            [mainEntityId]: priority++
+        };
+        let queue = oneEdgeForPriority(mainEntityId);
+
+
+        while (priority < 2000) {
+            uniqueIds = arr_diff(queue, uniqueIds);
+            //var newArray = oldArray.slice();
+            let newQueue = [];
+            queue.forEach(el => {
+                prioritiesDict[el] = priority;
+                oneEdgeForPriority(el).forEach(newNode => {
+                    newQueue.push(newNode);
+                });
+            });
+            
+            if (newQueue.length == 0) {
+                return prioritiesDict;
+            }
+            queue = newQueue.slice();
+            priority++;
+        }
+        function oneEdgeForPriority(mainEntityId) {
+            let resultIDs = [];
+            const mainEntityIndex = dict[mainEntityId];
+            if (typeof mainEntityIndex == 'undefined') {
+                alert('typeofundef');
+                return [];
+            }
+            const mainEntityRow = nodes[mainEntityIndex];
+            if (!mainEntityRow) {
+                alert('norow');
+                return [];
+            }
+
+            uniqueIds.forEach(id => {
+                if (prioritiesDict[id]) {
+                    return;
+                }
+                if (mainEntityRow[dict[id]] && (typeof prioritiesDict[dict[id]] == 'undefined')) {
+                    resultIDs.push(id);
+                }
+            });
+            return resultIDs;
+        }
+
+        return prioritiesDict;
     }
 
 
@@ -74,7 +136,7 @@ class Graph {
         const set1 = this.findAvailableVertices(initialVertexId);
         const set2 = this.findAvailableVertices(endingVertexId);
         if (set1.length !== set2.length) {
-            console.log(`Sets lengthes aren't equal`); // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
+            console.log('Sets lengthes aren\'t equal'); // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
             return undefined;
         }
 
@@ -83,10 +145,10 @@ class Graph {
 
         set1.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
         set2.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
 
         for (let i = 0; i < set1.length; i++) {
             if (set1[i] !== set2[i]) {
@@ -128,32 +190,32 @@ class Graph {
     }
 
     findAvailableVerticesFromToBFS(initialVertexId, endingVertexId, maxPathCount = 5) {
-        let t1 = performance.now();
 
         const set1 = this.findAvailableVertices(initialVertexId);
         const set2 = this.findAvailableVertices(endingVertexId);
 
         if (set1.length !== set2.length) {
             // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
-            console.log(`Sets lengthes aren't equal`);
+            console.log('Sets lengthes aren\'t equal');
             return undefined;
         }
 
         /* 
             even if the lengthes of subgraphs are equal, we have to check if theese subGraphs are same.
-            Sorting the elements before performing iterative elements comparison
+            Sorting arrays before performing iterative elements comparison
         */
 
         set1.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
+
         set2.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
 
         for (let i = 0; i < set1.length; i++) {
             if (set1[i] !== set2[i]) {
-                console.log(`Sets aren't equal`);
+                console.log('Sets aren\'t equal');
                 return undefined;
             }
         }
@@ -182,7 +244,7 @@ class Graph {
     findOneEdgeChildren(mainEntityId) {
         let resultIDs = [];
         const mainEntityIndex = this.dict[mainEntityId];
-        if (!mainEntityIndex) {
+        if (typeof mainEntityIndex == 'undefined') {
             return;
         }
         const mainEntityRow = this.nodes[mainEntityIndex];
@@ -191,7 +253,7 @@ class Graph {
         }
         this.uniqueIds.forEach(id => {
             if (mainEntityRow[this.dict[id]]) {
-                resultIDs.push(id)
+                resultIDs.push(id);
             }
         });
         return resultIDs;
@@ -211,40 +273,11 @@ function addNewLinks(arr1, arr2) {
             }
         }
         if (!foundSame) {
-            arr1.push(link)
+            arr1.push(link);
         }
     }
 
     return arr1;
-}
-
-function sleep(milliseconds) {
-    var start = new Date().getTime();
-    for (var i = 0; i < 1e7; i++) {
-        if ((new Date().getTime() - start) > milliseconds) {
-            break;
-        }
-    }
-}
-
-
-function arraysEqual(_arr1, _arr2) {
-
-    if (!Array.isArray(_arr1) || !Array.isArray(_arr2) || _arr1.length !== _arr2.length)
-        return false;
-
-    var arr1 = _arr1.concat().sort();
-    var arr2 = _arr2.concat().sort();
-
-    for (var i = 0; i < arr1.length; i++) {
-
-        if (arr1[i] !== arr2[i])
-            return false;
-
-    }
-
-    return true;
-
 }
 
 function bfsHelper(initialVertexId, endingVertexId, nodes, dict, set, toAvoid) {
@@ -308,4 +341,22 @@ function bfsHelper(initialVertexId, endingVertexId, nodes, dict, set, toAvoid) {
     traverse({ id: initialVertexId, parent: null });
 
     return visited;
+}
+
+function arr_diff(a1, a2) {
+    var a = [], diff = [];
+    for (var i = 0; i < a1.length; i++) {
+        a[a1[i]] = true;
+    }
+    for (var i = 0; i < a2.length; i++) {
+        if (a[a2[i]]) {
+            delete a[a2[i]];
+        } else {
+            a[a2[i]] = true;
+        }
+    }
+    for (var k in a) {
+        diff.push(k);
+    }
+    return diff;
 }

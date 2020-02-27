@@ -1,5 +1,27 @@
-async function scenario(autocompleteHelp) {
-    const CUSTOM_INPUT_ID = "eoijgp[q34jihv89yu59hjegpuuh";
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+
+async function scenario(autocompleteHelp, facade) {
+    async function getK20(title, propertyToChange, searchHelp) {
+        return await Swal.fire({
+            title: title,
+            icon: 'question',
+            html: `<input type="text" id="${CUSTOM_INPUT_ID}" class="swal2-input">`,
+            confirmButtonText: 'Продовжити',
+            showCancelButton: true,
+            cancelButtonText: 'Відмінити та почати спочатку',
+
+            onOpen: () => {
+                autocomplete(document.getElementById(CUSTOM_INPUT_ID), searchHelp);
+            },
+            onClose: () => {
+                let customInput = document.getElementById(CUSTOM_INPUT_ID);
+
+                scenario[propertyToChange] = customInput ? customInput.value : '';
+            },
+        });
+    }
+    const CUSTOM_INPUT_ID = 'eoijgp[q34jihv89yu59hjegpuuh';
     let scenario = {
         typeOneSelected: false,
         typeTwoSelected: false,
@@ -29,7 +51,7 @@ async function scenario(autocompleteHelp) {
             },
             inputValidator: (value) => {
                 if (!value) {
-                    return 'Оберіть значення'
+                    return 'Оберіть значення';
                 }
             },
             confirmButtonText: 'Продовжити',
@@ -46,29 +68,11 @@ async function scenario(autocompleteHelp) {
             continue;
         }
 
-        async function getK20(title, propertyToChange, searchHelp) {
-            return await Swal.fire({
-                title: title,
-                icon: 'question',
-                html: `<input type="text" id="${CUSTOM_INPUT_ID}" class="swal2-input">`,
-                confirmButtonText: "Продовжити",
-                showCancelButton: true,
-                cancelButtonText: 'Відмінити та почати спочатку',
 
-                onOpen: () => {
-                    autocomplete(document.getElementById(CUSTOM_INPUT_ID), searchHelp)
-                },
-                onClose: () => {
-                    let customInput = document.getElementById(CUSTOM_INPUT_ID);
-
-                    scenario[propertyToChange] = customInput ? customInput.value : '';
-                },
-            });
-        }
 
         while (!scenario.mainEntityId) {
             let res = await getK20('Ідентифікатор K020 основної особи діаграми', 'mainEntityId', autocompleteHelp);
-            if (res.dismiss === "cancel" || res.dismiss === "backdrop") {
+            if (res.dismiss === 'cancel' || res.dismiss === 'backdrop') {
                 scenario.mainEntityId = ''; // in case input contained a string before user pressed cancel or backdrop
                 break;
             }
@@ -80,7 +84,7 @@ async function scenario(autocompleteHelp) {
         if (visType === 'singleEntity' && scenario.mainEntityEntered) {
             scenario.typeOneSelected = true;
             let visualizationBuildingConfirmation = await Swal.fire({
-                title: `Тип діаграми:\n єдина особа`,
+                title: 'Тип діаграми:\n єдина особа',
                 html: `Введене значення: <br> ${scenario.mainEntityId}`,
                 icon: 'success',
                 confirmButtonText: 'Почати побудову візуалізації',
@@ -91,16 +95,20 @@ async function scenario(autocompleteHelp) {
             if (visualizationBuildingConfirmation.value === true) {
                 return {
                     type: 'singleEntity',
-                    mainEntityId: scenario.mainEntityId.substring(0, 10)
-                }
+                    mainEntityId: scenario.mainEntityId.split(' ⁃', 1)[0]
+                };
             } else {
                 scenario.setAllToFalse();
             }
         } else if (visType === 'chain' && scenario.mainEntityEntered) {
-
+            let newAutocompleteHelp = facade.getNewAutcompleteList(scenario.mainEntityId.split(' ⁃', 1)[0]);
+            if (!newAutocompleteHelp || !newAutocompleteHelp.length) {
+                scenario.secondEntityId = ''; // in case input contained a string before user pressed cancel or backdrop
+                break;
+            }
             while (!scenario.secondEntityId) {
-                let res = await getK20('Ідентифікатор K020 особи, до якої формуватиметься ланцюг звязків', 'secondEntityId', autocompleteHelp);
-                if (res.dismiss === "cancel" || res.dismiss === "backdrop") {
+                let res = await getK20('Ідентифікатор K020 особи, до якої формуватиметься ланцюг звязків', 'secondEntityId', newAutocompleteHelp);
+                if (res.dismiss === 'cancel' || res.dismiss === 'backdrop') {
                     scenario.secondEntityId = ''; // in case input contained a string before user pressed cancel or backdrop
                     break;
                 }
@@ -110,7 +118,7 @@ async function scenario(autocompleteHelp) {
                 scenario.secondEntityEntered = true;
                 let visualizationBuildingConfirmation = await Swal.fire({
                     icon: 'success',
-                    title: `Тип діаграми:\n Зв'язок між двома сутностями`,
+                    title: 'Тип діаграми:\n Зв\'язок між двома сутностями',
                     html: `Введені ідентифікатори: <br> ${scenario.mainEntityId}, ${scenario.secondEntityId}`,
                     confirmButtonText: 'Почати побудову візуалізації',
                     showCancelButton: true,
@@ -120,9 +128,9 @@ async function scenario(autocompleteHelp) {
                 if (visualizationBuildingConfirmation.value === true) {
                     return {
                         type: 'chain',
-                        mainEntityId: scenario.mainEntityId.substring(0, 10),
-                        secondEntityId: scenario.secondEntityId.substring(0, 10)
-                    }
+                        mainEntityId: scenario.mainEntityId.split(' ⁃', 1)[0],
+                        secondEntityId: scenario.secondEntityId.split(' ⁃', 1)[0]
+                    };
                 } else {
                     scenario.setAllToFalse();
                 }
@@ -133,5 +141,5 @@ async function scenario(autocompleteHelp) {
         type: 'canceled',
         mainEntityId: null,
         secondEntityId: null
-    }
+    };
 }

@@ -1,247 +1,291 @@
-function main(dataInterface, domNode) {
-    try {
-        // getting data from mstr
-        let dataArr = dataInterface.getRawData(mstrmojo.models.template.DataInterface.ENUM_RAW_DATA_FORMAT.ROWS);
-        let facade = new Facade(dataArr, domNode.id)
-        let keyNameArray = findUniqueEntitiesForAutocomplete(dataArr)/* .map(el => {
-            el.key + '-' + el.name
-        }) */
-        let autocompleteHelp = new Array();
-        keyNameArray.forEach( (el) => {
-            autocompleteHelp.push(`${el.key} - ${el.name}`)
-        })
-        
-        /* let main_id = prompt('ID');
-        facade.showFrom(main_id); */
-        scenario(autocompleteHelp)
-            .then(visType => {
-                switch (visType.type) {
-                    case "singleEntity":
-                        //facade.showAllNodesFrom(visType.mainEntityId);
-                        let onePersonType = 'oneEndge';
-                        if (onePersonType == "all") {
-                            facade.showAllNodesFrom(visType.mainEntityId);
-                        } else if (onePersonType = "oneEdge") {
-                            facade.showFrom(visType.mainEntityId);
-                        }
-                        break;
-                    case "chain":
-                        let maxPathCount = 5,
-                            searchType = 'bfs'
-                        facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
-                        break;
-                    case "canceled":
-                        window.button.style.display = "block";
-                        return;
-                }
-            })
-    } catch (err) {
-        alert(`@lnkd_prsn.js ${err}`);
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+function entryPoint(me) {
+    setStyles(me);
+    addStartButton(me);
+    addUtilsMenu(me.domNode, me);
+
+
+    if (window.visType && window.visType.type !== 'canceled') {
+        main(me.dataInterface, me.domNode, me);
     }
 }
 
-/////////////////////////////////////////////////////////
+function main(dataInterface, domNode, me, forcedReload = false, showAllData = false) {
+    function showDiagram(visType) {
+        let maxPathCount;
+        let searchType;
+        let startButton;
+        switch (visType.type) {
+            case 'singleEntity':
+                //window.facade.showAllNodesFrom(visType.mainEntityId);
+                //window.facade.showAllNodesFrom(visType.mainEntityId);
+                window.facade.showFrom(visType.mainEntityId);
+                break;
+            case 'chain':
+                maxPathCount = 5;
+                searchType = 'bfs';
+                window.facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
+                break;
+            case 'all':
+
+                window.facade.showAll();
+                break;
+            case 'canceled':
+                startButton = document.getElementById('customStartButton');
+                startButton.style.display = 'block';
+                return;
+        }
+    }
+
+    function getMstrData() {
+        /*  Get the data from MSTR in JSON format  */
+        return me.dataInterface.getRawData(
+            mstrmojo.models.template.DataInterface.ENUM_RAW_DATA_FORMAT.ROWS_ADV,
+            { hasSelection: true, hasTitleName: true });
+    }
+    try {
+        // getting data from mstr
+        let dataArr = getMstrData();
+        dataArr = processData(me, dataArr);
+        if (!window.facade) {
+            window.facade = new Facade(dataArr, domNode.id, me);
+        } else {
+            window.facade.updateData(dataArr);
+        }
+        if (showAllData) {
+            let myVisType = {
+                type: 'all'
+            };
+            window.visType = myVisType;
+            return showDiagram({ type: 'all' });
+        }
+        let keyNameArray = findUniqueEntitiesForAutocomplete(dataArr);
+        let autocompleteHelp = [];
+        keyNameArray.forEach((el) => {
+            autocompleteHelp.push(`${el.key} ⁃ ${el.name}`);
+        });
+
+        if (forcedReload || !window.visType || window.visType.type === 'canceled') {
+            scenario(autocompleteHelp, window.facade)
+                .then(visType => {
+                    if (!(window.visType && window.visType.type !== 'canceled' && visType.type === 'canceled')) {
+                        window.visType = visType;
+                    }
+                    showDiagram(visType);
+                });
+        } else {
+            showDiagram(window.visType);
+        }
+
+
+    } catch (err) {
+        alert(`@main.js: ${err}`);
+    }
+}
+
+
 
 function findUniqueEntitiesForAutocomplete(tableData) {
-    
+
     let uniqueEntities = {};
+    let resArr = [];
     tableData.forEach(row => {
 
-        if (!uniqueEntities[row['K0201']]) {
-            uniqueEntities[row['K0201']] = {
-                key: row['K0201'],
-                name: row['SHORTNAME1']
+        if (!uniqueEntities[row[DECOMPOSED_ATTRIBUTES.NODE1.ID]]) {
+            uniqueEntities[row[DECOMPOSED_ATTRIBUTES.NODE1.ID]] = {
+                key: row[DECOMPOSED_ATTRIBUTES.NODE1.ID],
+                name: row[DECOMPOSED_ATTRIBUTES.NODE1.NAME]
             };
+            resArr.push({ key: row[DECOMPOSED_ATTRIBUTES.NODE1.ID], name: row[DECOMPOSED_ATTRIBUTES.NODE1.NAME] });
         }
 
-        if (!uniqueEntities[row['K0202']]) {
-            uniqueEntities[row['K0202']] = {
-                key: row['K0202'],
-                name: row['SHORTNAME2']
+        if (!uniqueEntities[row[DECOMPOSED_ATTRIBUTES.NODE2.ID]]) {
+            uniqueEntities[row[DECOMPOSED_ATTRIBUTES.NODE2.ID]] = {
+                key: row[DECOMPOSED_ATTRIBUTES.NODE2.ID],
+                name: row[DECOMPOSED_ATTRIBUTES.NODE2.NAME]
             };
+            resArr.push({ key: row[DECOMPOSED_ATTRIBUTES.NODE2.ID], name: row[DECOMPOSED_ATTRIBUTES.NODE2.NAME] });
         }
     });
-
-    let resArr = [];
-    for (let entity in uniqueEntities) {
-        resArr.push({ key: uniqueEntities[entity].key, name: uniqueEntities[entity].name })
-    }
     return resArr;
 }
 
+function addStartButton(me) {
+    if (!window.button) {
+        window.button = document.createElement('button');
+        window.button.innerHTML = 'Почати роботу';
+        window.button.id = 'customStartButton';
+        window.button.classList.add('customStartButton');
+        window.button.style = `
+            padding: 10px 20px;
+            border-radius: 10px;
+            background-color: #3b92ed;
+            color: white;
+            border: none;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.5s;
+        `;
 
-/*
-( function (){
-
-
-    // * specifying buttons events
-    $(document).ready(()=> {
-        loadData();
-        $("#beginScenario").click( () => {
-            beginScenario();
-        })
-        $("#showAll").click( () => {
-            showAll();
-        })
-        $("#deleteDiagram").click( () => {
-            deleteDiagram();
-        })
-        $("#dataInfo").click( () => {
-            dataInfo();
-        })
-
-
-    })
-
-    let facade = null;
-    let autocompleteHelp = null;
-    let selectedData = data_new;
-
-    function loadData() {
-        let t1 = performance.now();
-
-        facade = new Facade(selectedData, 'gojs');
-        autocompleteHelp = findUniqueEntitiesForAutocomplete(selectedData).map(el => {
-            return el.key + " - " + el.name
+        window.button.addEventListener('click', () => {
+            main(me.dataInterface, me.domNode, me);
         });
 
-        Toast.fire({
-            icon: 'success',
-            title: `Підготовка даних зайняла ${duration(t1, performance.now())}`
-        })
     }
 
+    me.domNode.appendChild(window.button);
+}
 
+function addUtilsMenu(domNode, me) {
+    removeElement('customUtils');
+    removeElement('hider');
+    let newDiv = document.createElement('div');
+    newDiv.id = 'customUtils';
 
-    function showAll() {
-        if (!facade) return showError();
-        facade.showAll();
-    }
-
-    // * starting a SwetAlert2 chaining windows scenario
-    function beginScenario() {
-
-        if (!facade) return showError();
-        scenario(autocompleteHelp)
-            .then((visType) => {
-                switch (visType.type) {
-                    case "singleEntity":
-                        //facade.showAllNodesFrom(visType.mainEntityId);
-                        let onePersonType = $('#oneNodeShowType>option:selected').attr("name");
-                        if( onePersonType == "all"){
-                            facade.showAllNodesFrom(visType.mainEntityId);
-                        } else if( onePersonType = "oneEdge"){
-                            facade.showFrom(visType.mainEntityId);
-                        }
-                        break;
-                    case "chain":
-                        let maxPathCount = parseInt($('#maxPathCount').val()),
-                            searchType = $('#searchType>option:selected').attr("name");
-                        facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
-                        break;
-                    case "canceled":
-                        return;
-                }
-            });
-    }
-
-    function deleteDiagram() {
-        if (!facade) return showError();
-        facade.deleteDiagram();
-        Toast.fire({
-            icon: 'warning',
-            title: ' Діаграму очищено'
-        })
-    }
-
-    // * modal window to show loading time information
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2500,
-        timerProgressBar: true
-    });
-
-
-    function duration(t1, t2) {
-        return `${((t2 - t1) / 1000).toFixed(3)} сек.`
-    }
-
-    function showError() {
-        Toast.fire({
-            icon: 'error',
-            title: 'Зачекайте, дані ще не завантажено'
-        })
-    }
-
-
-
-    $(function () {
-        // on page load, set the text of the label based the value of the range
-        $('#maxPathCountLabel').text(`Макс. шляхів (пошук у ширину):  ${$('#maxPathCount').val()}`);
-
-        // setup an event handler to set the text when the range value is dragged (see event for input) or changed (see event for change)
-        $('#maxPathCount').on('input change', function () {
-            $('#maxPathCountLabel').val($('#maxPathCount').val());
-        });
-
-        $('#maxPathCountLabel').on('input change', function () {
-            $('#maxPathCount').val($('#maxPathCountLabel').val());
-        });
-    });
-    })();
-
-
-    /* function dataInfo() {
-        let uniqueF069 = [];
-        let uniqueK021 = [];
-        const definedF069Values = ["01", "02", "07", "08", "10", "11", "68", "06", "09", "41", "99"];
-        const definedK021Values = ["3", "2", "6", "A", "F", "I", "1", "D", "E", "G", "4", "5", "7", "B", "H", "L", "8", "9", "C", "K"];
-        const definedF069Ranges = [
-            {
-                from: 12,
-                to: 15
-            },
-            {
-                from: 16,
-                to: 40
-            },
-        ];
-
-        selectedData.forEach(row => {
-            if (!uniqueF069.includes(row['F069'])) {
-                uniqueF069.push(row['F069']);
+    let buttons = [
+        {
+            innerHTML: 'Інша діаграма',
+            onClick: () => {
+                main(me.dataInterface, me.domNode, me, true);
             }
-            if (!uniqueK021.includes(row['K021_1'])) {
-                uniqueK021.push(row['K021_1']);
+        }, {
+            className: 'customUtilsButton',
+            innerHTML: 'Зберегти вигляд для експорту',
+            onClick: () => {
+                alert('raising event');
+                me.raiseEvent({
+                    name: 'renderFinished',
+                    id: me.k
+                });
             }
-            if (!uniqueK021.includes(row['K021_2'])) {
-                uniqueK021.push(row['K021_2']);
-            }
-        });
-        let index = uniqueF069.length - 1;
-        while (index >= 0) {
-            if (definedF069Values.includes(uniqueF069[index])) {
-                uniqueF069.splice(index, 1);
-            } else {
-                for (rangeIndex = 0; rangeIndex < definedF069Ranges.length; rangeIndex++) {
-                    if (uniqueF069[index] >= definedF069Ranges[rangeIndex].from && uniqueF069[index] <= definedF069Ranges[rangeIndex].to) {
-                        uniqueF069.splice(index, 1);
-                        break;
+        }, {
+            innerHTML: 'Відобразити всі дані',
+            onClick: () => {
+                Swal.fire({
+                    title: 'Відображення всього масиву даних є часозатратним та може призвести до зависання ПЗ, Ви впевнені?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Зрозуміло',
+                    cancelButtonText: 'Відміна'
+                }).then((result) => {
+                    if (result.value) {
+                        main(me.dataInterface, me.domNode, me, true, true);
                     }
-                }
-            }
-            index--;
-        }
-        index = uniqueK021.length - 1;
-        while (index >= 0) {
-            if (definedK021Values.includes(uniqueK021[index])) {
-                uniqueK021.splice(index, 1);
-            }
-            index--;
-        }
+                });
 
-        //let oneEdgeChildren = facade.Graph.getOneEdgeChildren('');
-        //console.log(oneEdgeChildren);
-    } */
+            }
+        }
+    ];
+
+    buttons.forEach(el => {
+        let button = document.createElement('button');
+        button.className = el.className || 'customUtilsButton';
+        button.innerHTML = el.innerHTML;
+        button.addEventListener('click', el.onClick);
+        newDiv.appendChild(button);
+    });
+
+    newDiv.style =
+        `
+        position: absolute;
+        top: 10px;
+        display: flex;
+        flex-direction: row;
+        box-sizing: content-box;
+        z-index: 999;
+        transition: 0.9s;
+        `;
+
+    let expander = document.createElement('div');
+    expander.innerHTML = '<span>&nbsp;&nbsp;</span>';
+    expander.style = `
+        background-color: rgb(230,230,230);
+        color: black;
+        border: 1px solid rgb(212, 212, 212);
+        border-radius: 0px 50% 50% 0px;
+    `;
+    expander.id = 'expander';
+    newDiv.appendChild(expander);
+
+
+    let hider = document.createElement('div');
+    let hiderButton = document.createElement('button');
+    hider.id = 'hider';
+    hider.style = `
+        position: absolute;
+        top: -17px;
+        left: 0;
+        
+        box-sizing: content-box;
+        display: flex;
+        flex-direction: row;
+        max-height: 80px;
+        z-index: 998;
+    `;
+    hiderButton.innerHTML = 'Гарного дня!';
+    hiderButton.style = `
+        background-color: white;
+        border: 1px solid white;
+        padding: 0px;
+        margin-right: 1px;
+        color: white;
+        width: 177px;
+        height: 85px;
+        cursor: default;
+        
+    `;
+    hider.appendChild(hiderButton);
+    //domNode.parentElement.appendChild(hider);
+    domNode.parentElement.appendChild(newDiv);
+    domNode.parentElement.appendChild(hider);
+
+    let offset = document.getElementById('expander').getBoundingClientRect().left - document.getElementById('customUtils').getBoundingClientRect().left - 3;
+    newDiv.style.left = `${-offset}px`;
+
+    let css = `
+    #customUtils:hover { 
+        margin-left: ${offset}px;
+        }
+    #customUtils.hover { 
+        margin-left: ${offset}px;
+        }
+       
+    `;
+    var style = document.createElement('style');
+    if (style.styleSheet) {
+        style.styleSheet.cssText = css;
+    } else {
+        style.appendChild(document.createTextNode(css));
+    }
+    document.getElementsByTagName('head')[0].appendChild(style);
+    let customUtils = document.getElementById('customUtils');
+    customUtils.classList.add('hover');
+    setTimeout(() => {
+        customUtils.classList.remove('hover');
+    }, 500);
+}
+
+function removeElement(elementId) {
+    // Removes an element from the document
+    var element = document.getElementById(elementId);
+    if (element && element.parentNode) {
+        element.parentNode.removeChild(element);
+    }
+}
+
+function setStyles(me) {
+    me.domNode.style.display = 'flex';
+    me.domNode.style.flexDirection = 'column';
+    me.domNode.style.alignItems = 'center';
+    me.domNode.style.justifyContent = 'center';
+    me.domNode.style.overflowX = 'scroll';
+    me.domNode.style.overflowY = 'scroll';
+}
+
+function getMstrData() {
+    /*  Get the data from MSTR in JSON format  */
+    return me.dataInterface.getRawData(mstrmojo.models.template.DataInterface.ENUM_RAW_DATA_FORMAT.ROWS_ADV, { hasSelection: true });
+}
