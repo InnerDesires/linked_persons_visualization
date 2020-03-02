@@ -1,11 +1,11 @@
 class Facade {
     constructor(data, HTMLElementId) {
         this.HTMLElementId = HTMLElementId;
-        console.log(`[Facade] data.length = ${data.length}`)
+        console.log(`[Facade] data.length = ${data.length}`);
 
         this.data = this.removeDuplicateLinks(data);
-        console.log(`[Facade] this.data.length = ${this.data.length}`)
-        let links = this.data.map(el => { return { from: el["K0201"], to: el["K0202"] } });
+        console.log(`[Facade] this.data.length = ${this.data.length}`);
+        let links = this.data.map(el => { return { from: el['K0201'], to: el['K0202'] }; });
         this.Graph = new Graph(links);
     }
 
@@ -13,7 +13,7 @@ class Facade {
         this.deleteDiagram();
         delete this.renderer;
         this.renderer = new Renderer(this.data, this.HTMLElementId);
-    } 
+    }
 
     showAllNodesFrom(mainEntityId) {
         this.deleteDiagram();
@@ -32,17 +32,17 @@ class Facade {
         let log = new TimeLogger('Show From One Node');
         this.deleteDiagram();
         delete this.renderer;
-        log.label("Diagram deletion");
+        log.label('Diagram deletion');
 
         const currentCluster = this.Graph.findAvailableVertices(mainEntityId);
         log.label('Current cluster creation');
 
         this.currentData = this.data.filter(row => {
-            return (currentCluster.includes(row['K0201']) && currentCluster.includes(row['K0202']))
+            return (currentCluster.includes(row['K0201']) && currentCluster.includes(row['K0202']));
         });
 
         log.label('Table Data filtering');
-        let currentGraph = new Graph(this.currentData.map(el => { return { from: el["K0201"], to: el["K0202"] } }));
+        let currentGraph = new Graph(this.currentData.map(el => { return { from: el['K0201'], to: el['K0202'] }; }));
         log.label('New graph Creation');
         let nodesToShow = currentGraph.findOneEdgeChildren(mainEntityId);
         nodesToShow.push(mainEntityId);
@@ -74,7 +74,7 @@ class Facade {
                 break;
             default:
                 console.warn(`[showFromTo] Warning - provided search type (${searchType}) wasn't recognized.
-                                                                            Using default search type - BFS.`)
+                                                                            Using default search type - BFS.`);
                 availableLinks = this.Graph.findAvailableVerticesFromToBFS(mainEntityId, secondEntityId, maxPathCount);
                 break;
         }
@@ -84,17 +84,17 @@ class Facade {
             return Toast.fire({
                 icon: 'error',
                 title: 'Помилка при виборі осіб'
-            })
+            });
         }
 
         let uniqueIDs = [];
         for (let index = 0; index < availableLinks.length; index++) {
             const element = availableLinks[index];
             if (!uniqueIDs.includes(element.from)) {
-                uniqueIDs.push(element.from)
+                uniqueIDs.push(element.from);
             }
             if (!uniqueIDs.includes(element.to)) {
-                uniqueIDs.push(element.to)
+                uniqueIDs.push(element.to);
             }
         }
 
@@ -113,7 +113,7 @@ class Facade {
     removeDuplicateLinks(data) {
 
         if (!data || data.length == 0) {
-            console.error(`[removeDuplicateLinks] Passed data array is ${data ? "empty" : "undefined"}`)
+            console.error(`[removeDuplicateLinks] Passed data array is ${data ? 'empty' : 'undefined'}`);
             return [];
         }
 
@@ -124,13 +124,13 @@ class Facade {
             ! Priority is defined by F069 parameter's value. Lesser value means higher priority
         */
 
-        let log = new TimeLogger("Remove duplicated links");
+        let log = new TimeLogger('Remove duplicated links');
 
         // saving visited links in a dictionary
-        let currentState = {}
+        let currentState = {};
 
         // initializing dictionary with the values of 1st element of links data array
-        currentState[`${data[0]["K0201"]}${data[0]["K0202"]}`] = { "F069": data[0]["F069"], index: 0 };
+        currentState[`${data[0]['K0201']}${data[0]['K0202']}`] = { 'F069': data[0]['F069'], index: 0 };
 
 
         // Iterating through the array of links
@@ -139,8 +139,8 @@ class Facade {
 
             // as direction of the links desn't matter, creating two possible string that 
             // can be used as a key for visited links dictionary
-            const strStraight = `${element["K0201"]}${element["K0202"]}`
-            const strReverse = `${element["K0202"]}${element["K0201"]}`
+            const strStraight = `${element['K0201']}${element['K0202']}`;
+            const strReverse = `${element['K0202']}${element['K0201']}`;
             // OR operator returns first "truthful" statement value or "undefined"
             let res = currentState[strStraight] || currentState[strReverse];
 
@@ -151,9 +151,9 @@ class Facade {
                 }
             } else { // othervise - adding new links to the links dictionary
                 currentState[strStraight] = {
-                    "F069": element["F069"],
-                    "index": index
-                }
+                    'F069': element['F069'],
+                    'index': index
+                };
             }
         }
 
@@ -161,8 +161,8 @@ class Facade {
         // we need to iterate throught the "unique" links indices and push corresponding data array elements to the resulting array
         let toReturn = [];
         for (let key in currentState) {
-            const value = currentState[key]
-            toReturn.push(data[value.index])
+            const value = currentState[key];
+            toReturn.push(data[value.index]);
         }
         log.showReport();
         return toReturn;

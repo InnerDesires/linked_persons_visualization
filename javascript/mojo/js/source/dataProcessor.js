@@ -257,7 +257,6 @@ function processData(me, data) {
      * @property {string} propertyName Name of the property zone includes
      * @property {number} itemsCount 1 or in case of Complex Attribute - count of included attributes
      * 
-     * @param { {} } zone - Microstrategy Zone Object
      * @return { ZoneType }  Object<ZoneType> that contains information what data to expect in the zone 
      */
     function getZoneType(zone) {

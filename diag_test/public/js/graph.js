@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Class representing a Graph
  */
@@ -11,7 +12,8 @@ class Graph {
      * @param {Link[]} linksArray
      */
     constructor(linksArray) {
-        let log = new TimeLogger("Graph Constructor. Links Array length: " + linksArray.length);
+        // eslint-disable-next-line no-undef
+        let log = new TimeLogger('Graph Constructor. Links Array length: ' + linksArray.length);
         this.uniqueIds = [];
         linksArray.forEach(link => {
             if (!this.uniqueIds.includes(link.from))
@@ -20,7 +22,7 @@ class Graph {
             if (!this.uniqueIds.includes(link.to))
                 this.uniqueIds.push(link.to);
         });
-        log.label("Searching for unique IDs");
+        log.label('Searching for unique IDs');
 
         this.nodes = {};
         let initialDictionary = [];
@@ -46,11 +48,10 @@ class Graph {
     /**
      * @param {String} initialVertexId
      *
-     * @return String[]|undefined Array of IDs of available Vertexs
+     * @return {String[]} Array of IDs of available Vertexs
      */
-
     findAvailableVertices(initialVertexId) {
-        if (!initialVertexId || typeof initialVertexId !== "string" || !this.uniqueIds.includes(initialVertexId)) {
+        if (!initialVertexId || typeof initialVertexId !== 'string' || !this.uniqueIds.includes(initialVertexId)) {
             console.log('error - returning undefined');
             return;
         }
@@ -80,7 +81,7 @@ class Graph {
         const set1 = this.findAvailableVertices(initialVertexId);
         const set2 = this.findAvailableVertices(endingVertexId);
         if (set1.length !== set2.length) {
-            console.log(`Sets lengthes aren't equal`); // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
+            console.log('Sets lengthes aren\'t equal'); // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
             return undefined;
         }
 
@@ -89,10 +90,10 @@ class Graph {
 
         set1.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
         set2.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
 
         for (let i = 0; i < set1.length; i++) {
             if (set1[i] !== set2[i]) {
@@ -141,7 +142,7 @@ class Graph {
 
         if (set1.length !== set2.length) {
             // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
-            console.log(`Sets lengthes aren't equal`);
+            console.log('Sets lengthes aren\'t equal');
             return undefined;
         }
 
@@ -152,14 +153,14 @@ class Graph {
 
         set1.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
         set2.sort(function (a, b) {
             return a.localeCompare(b);
-        })
+        });
 
         for (let i = 0; i < set1.length; i++) {
             if (set1[i] !== set2[i]) {
-                console.log(`Sets aren't equal`);
+                console.log('Sets aren\'t equal');
                 return undefined;
             }
         }
@@ -178,7 +179,7 @@ class Graph {
                 newLinks.push({ to: vertex.id, from: vertex.parent.id });
                 vertex = vertex.parent;
             }
-            
+
             links = links.concat(newLinks);
         } while (visited.length > 1 && iterations < maxPathCount);
 
@@ -197,7 +198,7 @@ class Graph {
         }
         this.uniqueIds.forEach(id => {
             if (mainEntityRow[this.dict[id]]) {
-                resultIDs.push(id)
+                resultIDs.push(id);
             }
         });
         return resultIDs;
@@ -216,7 +217,7 @@ function addNewLinks(arr1, arr2) {
             }
         }
         if (!foundSame) {
-            arr1.push(link)
+            arr1.push(link);
         }
     }
 

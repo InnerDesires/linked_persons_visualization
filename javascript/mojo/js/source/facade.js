@@ -66,11 +66,7 @@ class Facade {
 
             let prioritiesDict = currentGraph.getRelativePriorities(mainEntityId);
 
-            this.renderer = new Renderer(this.currentData, this.HTMLElementId, {
-                mainEntityId: mainEntityId,
-                nodesToShowDict: nodesToShowDict,
-                prioritiesDict: prioritiesDict,
-            });
+            this.renderer = new Renderer(this.currentData, this.HTMLElementId, mainEntityId, nodesToShowDict, prioritiesDict);
 
 
         } catch (error) {

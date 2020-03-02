@@ -1,24 +1,26 @@
+/* eslint-disable no-undef */
+// @ts-nocheck
 ( function (){
 
 
 // * specifying buttons events
 $(document).ready(()=> {
     loadData();
-    $("#beginScenario").click( () => {
+    $('#beginScenario').click( () => {
         beginScenario();
-    })
-    $("#showAll").click( () => {
+    });
+    $('#showAll').click( () => {
         showAll();
-    })
-    $("#deleteDiagram").click( () => {
+    });
+    $('#deleteDiagram').click( () => {
         deleteDiagram();
-    })
-    $("#dataInfo").click( () => {
+    });
+    $('#dataInfo').click( () => {
         dataInfo();
-    })
+    });
 
 
-})
+});
 
 let facade = null;
 let autocompleteHelp = null;
@@ -29,13 +31,13 @@ function loadData() {
 
     facade = new Facade(selectedData, 'gojs');
     autocompleteHelp = findUniqueEntitiesForAutocomplete(selectedData).map(el => {
-        return el.key + " - " + el.name
+        return el.key + ' - ' + el.name;
     });
 
     Toast.fire({
         icon: 'success',
         title: `Підготовка даних зайняла ${duration(t1, performance.now())}`
-    })
+    });
 }
 
 
@@ -52,21 +54,21 @@ function beginScenario() {
     scenario(autocompleteHelp)
         .then((visType) => {
             switch (visType.type) {
-                case "singleEntity":
+                case 'singleEntity':
                     //facade.showAllNodesFrom(visType.mainEntityId);
-                    let onePersonType = $('#oneNodeShowType>option:selected').attr("name");
-                    if( onePersonType == "all"){
+                    let onePersonType = $('#oneNodeShowType>option:selected').attr('name');
+                    if( onePersonType == 'all'){
                         facade.showAllNodesFrom(visType.mainEntityId);
-                    } else if( onePersonType = "oneEdge"){
+                    } else if( onePersonType = 'oneEdge'){
                         facade.showFrom(visType.mainEntityId);
                     }
                     break;
-                case "chain":
+                case 'chain':
                     let maxPathCount = parseInt($('#maxPathCount').val()),
-                        searchType = $('#searchType>option:selected').attr("name");
+                        searchType = $('#searchType>option:selected').attr('name');
                     facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
                     break;
-                case "canceled":
+                case 'canceled':
                     return;
             }
         });
@@ -78,7 +80,7 @@ function deleteDiagram() {
     Toast.fire({
         icon: 'warning',
         title: ' Діаграму очищено'
-    })
+    });
 }
 
 // * modal window to show loading time information
@@ -92,14 +94,14 @@ const Toast = Swal.mixin({
 
 
 function duration(t1, t2) {
-    return `${((t2 - t1) / 1000).toFixed(3)} сек.`
+    return `${((t2 - t1) / 1000).toFixed(3)} сек.`;
 }
 
 function showError() {
     Toast.fire({
         icon: 'error',
         title: 'Зачекайте, дані ще не завантажено'
-    })
+    });
 }
 
 
@@ -124,7 +126,7 @@ function findUniqueEntitiesForAutocomplete(tableData) {
 
     let resArr = [];
     for (let entity in uniqueEntities) {
-        resArr.push({ key: uniqueEntities[entity].key, name: uniqueEntities[entity].name })
+        resArr.push({ key: uniqueEntities[entity].key, name: uniqueEntities[entity].name });
     }
     return resArr;
 }

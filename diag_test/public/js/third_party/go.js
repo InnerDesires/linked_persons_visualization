@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-ignore
 /*
  * GoJS v2.1.2 JavaScript Library for HTML Diagrams
  * Northwoods Software, https://www.nwoods.com/

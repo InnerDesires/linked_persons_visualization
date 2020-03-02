@@ -12,6 +12,7 @@
         "ecmaVersion": 2018,
         "sourceType": "module"
     },
+    "ignorePatterns": ["diag_test"],
     "rules": {
         "indent": [
             "off",
