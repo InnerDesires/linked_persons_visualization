@@ -1,0 +1,1 @@
+<visualizations><visualization-list name="ajax" show-in-web="true" view-mode="51"><visualization attribute-minimum="1" desc="Linked Person View" drop-zones="plugins.lnkd_prsn.lnkd_prsnDropZones" editor-model="plugins.lnkd_prsn.lnkd_prsnEditorModel" is-mojo="true" metric-minimum="1" scope="19" style-name="lnkd_prsn" widget-type="7" /></visualization-list></visualizations>

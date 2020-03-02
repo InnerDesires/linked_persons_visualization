@@ -1,0 +1,5 @@
+.mstrmojo-VIGallery .mstrmojo-VIGalleryList .item.ic-lnkd_prsn > div > div {
+background-image: url(images/icon.png);background-position: 0 0;
+}.mojo-theme-dark .mstrmojo-VIGallery .mstrmojo-VIGalleryList .item.ic-lnkd_prsn > div > div {
+background-position: 0 0;
+}
