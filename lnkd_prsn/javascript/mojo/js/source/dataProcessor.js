@@ -30,24 +30,22 @@ const DECOMPOSED_ATTRIBUTES = {
     }
 };
 function processData(me, data) {
+    /**
+     * @typedef {Object<string>} DataType
+     * @property {string} name The name of the data type
+     */
     const TYPES = {
+        /**  @type {DataType} */
         METRIC: {
             name: 'Metric',
-            dataPicker: function (el, tname) {
-                return;
-            }
         },
+        /** @type {DataType} */
         ATTRIBUTE: {
             name: 'Attribute',
-            dataPicker: function (el, tid) {
-                return;
-            }
         },
+        /**  @type {DataType} */
         COMPLEX_ATTRIBUTE: {
             name: 'ComplexAttribute',
-            dataPicker: function (el, tid) {
-                return;
-            }
         }
     };
 
@@ -218,6 +216,7 @@ function processData(me, data) {
         if (obj instanceof Object) {
             copy = {};
             for (var attr in obj) {
+                // eslint-disable-next-line no-prototype-builtins
                 if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
             }
             return copy;
@@ -252,8 +251,14 @@ function processData(me, data) {
         return resObj;
     }
     /**
-     * @param Object Zone Object
-     * @return Object | null - Type of the zone's item with additional data
+     * @typedef {Object} ZoneType 
+     * @property {DataType} type DataType zone contains
+     * @property {string} id Zone's ID
+     * @property {string} propertyName Name of the property zone includes
+     * @property {number} itemsCount 1 or in case of Complex Attribute - count of included attributes
+     * 
+     * @param { {} } zone - Microstrategy Zone Object
+     * @return { ZoneType }  Object<ZoneType> that contains information what data to expect in the zone 
      */
     function getZoneType(zone) {
         if (zone.items && zone.items.length == 1) {
@@ -262,7 +267,8 @@ function processData(me, data) {
                     return {
                         type: TYPES.ATTRIBUTE,
                         id: zone.items[0].id,
-                        propertyName: zone.items[0].n
+                        propertyName: zone.items[0].n,
+                        itemsCount: 1
                     };
                 } else if (zone.items[0].fs.length > 1) {
                     return {
@@ -276,7 +282,8 @@ function processData(me, data) {
                 return {
                     type: TYPES.METRIC,
                     id: zone.items[0].n,
-                    propertyName: zone.items[0].n
+                    propertyName: zone.items[0].n,
+                    itemsCount: 1
                 };
             }
         }

@@ -7,11 +7,11 @@ function entryPoint(me) {
 
 
     if (window.visType && window.visType.type !== 'canceled') {
-        main(me.dataInterface, me.domNode, me);
+        main(me);
     }
 }
 
-function main(dataInterface, domNode, me, forcedReload = false, showAllData = false) {
+function main(me, options) {
     function showDiagram(visType) {
         let maxPathCount;
         let searchType;
@@ -49,16 +49,16 @@ function main(dataInterface, domNode, me, forcedReload = false, showAllData = fa
         let dataArr = getMstrData();
         dataArr = processData(me, dataArr);
         if (!window.facade) {
-            window.facade = new Facade(dataArr, domNode.id, me);
+            window.facade = new Facade(dataArr, me.domNode.id, me);
         } else {
             window.facade.updateData(dataArr);
         }
-        if (showAllData) {
+        if (options && options.showAllData) {
             let myVisType = {
                 type: 'all'
             };
             window.visType = myVisType;
-            return showDiagram({ type: 'all' });
+            return showDiagram(myVisType);
         }
         let keyNameArray = findUniqueEntitiesForAutocomplete(dataArr);
         let autocompleteHelp = [];
@@ -66,7 +66,7 @@ function main(dataInterface, domNode, me, forcedReload = false, showAllData = fa
             autocompleteHelp.push(`${el.key} ⁃ ${el.name}`);
         });
 
-        if (forcedReload || !window.visType || window.visType.type === 'canceled') {
+        if ((options && options.forcedReload) || !window.visType || window.visType.type === 'canceled') {
             scenario(autocompleteHelp, window.facade)
                 .then(visType => {
                     if (!(window.visType && window.visType.type !== 'canceled' && visType.type === 'canceled')) {
@@ -129,7 +129,7 @@ function addStartButton(me) {
         `;
 
         window.button.addEventListener('click', () => {
-            main(me.dataInterface, me.domNode, me);
+            main(me);
         });
 
     }
@@ -147,7 +147,7 @@ function addUtilsMenu(domNode, me) {
         {
             innerHTML: 'Інша діаграма',
             onClick: () => {
-                main(me.dataInterface, me.domNode, me, true);
+                main(me, { forcedReload: true });
             }
         }, {
             className: 'customUtilsButton',
@@ -172,7 +172,10 @@ function addUtilsMenu(domNode, me) {
                     cancelButtonText: 'Відміна'
                 }).then((result) => {
                     if (result.value) {
-                        main(me.dataInterface, me.domNode, me, true, true);
+                        main(me, {
+                            forcedReload: true,
+                            showAllData: true
+                        });
                     }
                 });
 

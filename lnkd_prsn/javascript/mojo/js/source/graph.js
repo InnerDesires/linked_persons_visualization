@@ -1,14 +1,16 @@
 /* eslint-disable no-unused-vars */
+
 /**
  * Class representing a Graph
  */
 class Graph {
 
     /** 
-     * @typedef Link
-     * @type {object}
-     * @property {string} from - Link's from key
-     * @property {string} to - Link's to key
+     * @typedef Link Object representing a link
+     * @property {string} from Link's from key
+     * @property {string} to Link's to key
+     * 
+     * @constructor
      * @param {Link[]} linksArray
      */
     constructor(linksArray) {
@@ -39,9 +41,8 @@ class Graph {
     }
 
     /**
-     * @param {String} initialVertexId
-     *
-     * @return String[]|undefined Array of IDs of available Vertexs
+     * @param {string} initialVertexId
+     * @return {string[]} Array of IDs of available Vertexs
      */
 
     findAvailableVertices(initialVertexId) {
@@ -72,7 +73,7 @@ class Graph {
 
     getRelativePriorities(mainEntityId) {
         if (typeof mainEntityId !== 'string') {
-            return undefined;
+            return [];
         }
 
         let nodes = this.nodes;
@@ -96,7 +97,7 @@ class Graph {
                     newQueue.push(newNode);
                 });
             });
-            
+
             if (newQueue.length == 0) {
                 return prioritiesDict;
             }
