@@ -48,9 +48,38 @@ class Renderer {
                 }
 
             }
+
+            /**
+             * Accepts Row object, creates tooltip string using requied parameters. Fills in the error information 
+             * if required parameters are missing
+             * @param {Row} obj Data row
+             * @return {string} Link's tooltip string  
+             */
+            function createLinkTooltipString(obj) {
+                if (!obj) {
+                    return 'Помилка при створенні підказки';
+                }
+                const type = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION] : 'Тип не вказаний';
+                const begin = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.BEGIN] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.BEGIN] : 'Дата відсутня';
+                const end = obj[DECOMPOSED_ATTRIBUTES.LINK.END] ? obj[DECOMPOSED_ATTRIBUTES.LINK.END] : 'Зв\'язок актуальний';
+                const code = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE] : 'Код типу не вказаний';
+                const category = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY] : 'Категорія не вказана';
+                const from = (typeof obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME] : 'Помилка';
+                const to = (typeof obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME] : 'Помилка';
+
+                return `
+                    Тип зв'язку: ${type}
+                    Дата виникнення: ${begin}
+                    Дата зникнення: ${end}
+                    Код типу зв'язку: ${code}
+                    Код категорії зв'язку: ${category}
+                    Від: ${from}
+                    До: ${to}
+                `;
+            }
             data.forEach((obj) => {
                 let linkCat = getLinkCategory(obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY]);
-
+                let linkToolTip = createLinkTooltipString(obj);
                 // adding  the array of links
                 linkDataArray.push({
                     from: obj[DECOMPOSED_ATTRIBUTES.NODE2.ID],
@@ -60,7 +89,8 @@ class Renderer {
                     meaning: obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION],
                     fromName: obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME],
                     toName: obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME],
-                    T0901: obj[DECOMPOSED_ATTRIBUTES.LINK.SHARE]
+                    T0901: obj[DECOMPOSED_ATTRIBUTES.LINK.SHARE],
+                    tooltip: linkToolTip
                 });
 
 
@@ -330,7 +360,7 @@ class Renderer {
                     },
                         new go.Binding('text', 'name'))
                 ),
-                { // this tooltip shows the name and picture of the kitten
+                {
                     toolTip:
                         _('ToolTip',
                             _(go.Panel, 'Vertical',
@@ -367,7 +397,7 @@ class Renderer {
                         wrap: go.TextBlock.WrapFit, textAlign: 'center'
                     }, new go.Binding('text', 'name')),
                     getExpanderButton()
-                ), { // this tooltip shows the name and picture of the kitten
+                ), {
                 toolTip: getNodeToolTip()
             }
 
@@ -397,7 +427,7 @@ class Renderer {
                         wrap: go.TextBlock.WrapFit
                     }, new go.Binding('text', 'name')),
                     getExpanderButton()
-                ), { // this tooltip shows the name and picture of the kitten
+                ), {
                 toolTip: getNodeToolTip()
             }
 
@@ -428,7 +458,7 @@ class Renderer {
                         wrap: go.TextBlock.WrapFit
                     }, new go.Binding('text', 'name')),
                     getExpanderButton()
-                ), { // this tooltip shows the name and picture of the kitten
+                ), {
                 toolTip: getNodeToolTip()
             }
 
@@ -461,7 +491,7 @@ class Renderer {
                         font: 'bold 15px Arial, sans-serif',
                         wrap: go.TextBlock.WrapFit
                     }, new go.Binding('text', 'name')),
-                ), { // this tooltip shows the name and picture of the kitten
+                ), {
                 toolTip: getNodeToolTip()
             },
                 getExpanderButton()
@@ -494,7 +524,7 @@ class Renderer {
                         font: 'bold 15px Arial, sans-serif',
                         wrap: go.TextBlock.WrapFit
                     }, new go.Binding('text', 'name')),
-                ), { // this tooltip shows the name and picture of the kitten
+                ), {
                 toolTip: getNodeToolTip()
             },
                 getExpanderButton()
@@ -513,31 +543,17 @@ class Renderer {
     }
 
     getLinkTemplateMap() {
-        let linkAdorment =
-            _(go.Adornment, 'Auto',
+        function getLinkAdorment() {
+            return _(go.Adornment, 'Auto',
                 _(go.Panel, 'Auto',
-                    _(go.Shape, 'Rectangle', { fill: 'white', stroke: 'grey' }),
+                    _(go.Shape, 'Rectangle', { fill: 'white', stroke: 'black' }),
                     _(go.Panel, 'Vertical',
                         _(go.TextBlock, { margin: 5 },
-                            new go.Binding('text', 'meaning', (meaning = 'Не вказано') => {
-                                return `Пояснення: ${meaning}`;
-                            })),
-                        _(go.TextBlock, { margin: 5 },
-                            new go.Binding('text', DECOMPOSED_ATTRIBUTES.LINK.CATEGORY, (f069 = 'Не вказано') => {
-                                return `Тип зв'язку: ${f069}`;
-                            })),
-                        _(go.TextBlock, { margin: 5 },
-                            new go.Binding('text', 'fromName', (fromName = 'Не вказано') => {
-                                return `Від: ${fromName}`;
-                            })),
-                        _(go.TextBlock, { margin: 5 },
-                            new go.Binding('text', 'toName', (toName = 'Не вказано') => {
-                                return `До: ${toName}`;
-                            }))
+                            new go.Binding('text', 'tooltip', (tooltip = 'Помилка при створенні підказки') => tooltip))
                     )
                 ) // end Panel 
-            );  // end Adornment
-
+            );  // end Adornment 
+        }
         const managerLink =
             _(go.Link,
                 {
@@ -569,8 +585,8 @@ class Renderer {
                         return h ? 'red' : 'black';
                     }).ofObject()),
                 _(go.Shape, { fromArrow: 'BackwardTriangle' }),
-                { // this tooltip shows the name and picture of the kitten
-                    toolTip: linkAdorment
+                {
+                    toolTip: getLinkAdorment()
                 }
             );
 
@@ -692,8 +708,8 @@ class Renderer {
                             return `${t0901}%`;
                         }))
                 ),
-                { // this tooltip shows the name and picture of the kitten
-                    toolTip: linkAdorment
+                {
+                    toolTip: getLinkAdorment()
                 }
             );
         let stakeholderLink =
@@ -811,8 +827,8 @@ class Renderer {
                             return `${t0901}%`;
                         }))
                 ),
-                { // this tooltip shows the name and picture of the kitten
-                    toolTip: linkAdorment
+                {
+                    toolTip: getLinkAdorment()
                 }
             );
         let familyLink =
@@ -827,22 +843,9 @@ class Renderer {
                     strokeWidth: 2,
                     stroke: '#f9d491'
                 }),
-                { // this tooltip shows the name and picture of the kitten
-                    toolTip: linkAdorment
+                {
+                    toolTip: getLinkAdorment()
                 }
-                /*,
-                            _(go.Shape,
-                                {
-                                    toArrow: "Block",
-                                    fill: "#f9d491",
-                                    stroke: "#f9d491",
-                                }),
-                            _(go.Shape,
-                                {
-                                    fromArrow: "Block",
-                                    fill: "#f9d491",
-                                    stroke: "#f9d491"
-                                })*/
             );
         let oldLink =
             _(go.Link,
@@ -856,8 +859,8 @@ class Renderer {
                     strokeWidth: 3,
                     stroke: '#bbbbbb'
                 }),
-                { // this tooltip shows the name and picture of the kitten
-                    toolTip: linkAdorment
+                {
+                    toolTip: getLinkAdorment()
                 }
             );
         let otherLink =
@@ -884,8 +887,8 @@ class Renderer {
                     fill: 'white',
                     stroke: '#f79d91'
                 }),
-                { // this tooltip shows the name and picture of the kitten
-                    toolTip: linkAdorment
+                {
+                    toolTip: getLinkAdorment()
                 }
             );
         let commonContactsLink =
@@ -912,8 +915,8 @@ class Renderer {
                     fill: 'white',
                     stroke: '#ff78e2'
                 }),
-                { // this tooltip shows the name and picture of the kitten
-                    toolTip: linkAdorment
+                {
+                    toolTip: getLinkAdorment()
                 }
             );
 
@@ -928,10 +931,6 @@ class Renderer {
         linkTemplateMap.add('family', familyLink);
         linkTemplateMap.add('other', otherLink);
         linkTemplateMap.add('common_contacts', commonContactsLink);
-
-
-
-
 
         return linkTemplateMap;
     }
