@@ -1,10 +1,53 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 function entryPoint(me) {
-     
+
     setStyles(me);
     addStartButton(me);
-    addUtilsMenu(me.domNode, me);
+
+    let buttons = [
+        {
+            innerHTML: 'Відобразити всі дані',
+            onClick: () => {
+                Swal.fire({
+                    title: 'Відображення всього масиву даних є часозатратним та може призвести до зависання ПЗ, Ви впевнені?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Зрозуміло',
+                    cancelButtonText: 'Відміна'
+                }).then((result) => {
+                    if (result.value) {
+                        main(me, {
+                            forcedReload: true,
+                            showAllData: true
+                        });
+                    }
+                });
+
+            }
+        }, {
+            innerHTML: 'Фокус на основну сутність',
+            onClick: () => {
+                if (window.facade) {
+                    window.facade.focusOnMainEntity();
+                }
+            }
+        }, {
+            innerHTML: 'Згорнути все',
+            onClick: () => {
+                if (window.facade) {
+                    window.facade.collapseAll();
+                }
+            }
+        }, {
+            innerHTML: 'Інша діаграма',
+            onClick: () => {
+                main(me, { forcedReload: true });
+            }
+        }];
+    addUtilsMenu(me.domNode, buttons);
 
 
     if (window.visType && window.visType.type !== 'canceled') {

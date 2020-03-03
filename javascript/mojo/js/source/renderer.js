@@ -289,43 +289,8 @@ class Renderer {
             });
         }
 
-        
-        function expandFrom(rootNode) {
 
-            rootNode.diagram.model.setDataProperty(rootNode.data, 'isCollapsed', false);
-            let adjacent = rootNode.findNodesConnected();
-
-            adjacent.each((_node) => {
-                _node.diagram.model.setDataProperty(_node.data, 'visible', true);
-                if (_node.data.priority > rootNode.data.priority && !_node.data.expandedBy) {
-                    _node.diagram.model.setDataProperty(_node.data, 'expandedBy', rootNode.data.key);
-                }
-                let children = _node.findNodesConnected();
-
-                while (children.next()) {
-                    let child = children.value;
-                    if (!child.data.visible) {
-                        _node.diagram.model.setDataProperty(_node.data, 'showButton', true);
-                        break;
-                    }
-                }
-            });
-            rootNode.diagram.layoutDiagram();
-            function traverse(_node) {
-                _node.diagram.model.setDataProperty(_node.data, 'visible', true);
-                let adjacent = rootNode.findNodesConnected();
-                let queue = [];
-                adjacent.each(connected => {
-                    if (connected.data.priority > rootNode.priority) {
-                        queue.push(connected);
-                    }
-                });
-                queue.forEach((element) => {
-                    traverse(element);
-                });
-                return;
-            }
-        }
+        let expandFrom = this.expandFrom;
         let collapseFrom = this.collapseFrom;
         function toggleNode(e, obj) {
             e.diagram.startTransaction();
@@ -337,7 +302,6 @@ class Renderer {
             }
             e.diagram.commitTransaction('toggled visibility of dependencies');
         }
-        collapseFrom = null;
 
         function getNodeToolTip() {
             return _('ToolTip',
@@ -415,13 +379,7 @@ class Renderer {
                         new go.Binding('text', 'name'))
                 ),
                 {
-                    toolTip:
-                        _('ToolTip',
-                            _(go.Panel, 'Vertical',
-                                _(go.TextBlock, { margin: 3, text: 'error' }
-                                    , new go.Binding('text', 'tooltip'))
-                            ) // end Panel 
-                        )  // end Adornment
+                    toolTip: getNodeToolTip()
                 },
                 getExpanderButton()
             );
@@ -514,9 +472,7 @@ class Renderer {
                     getExpanderButton()
                 ), {
                 toolTip: getNodeToolTip()
-            }
-
-            );
+            });
         let physicalSubjectNode =
             _(go.Node, 'Vertical', {
                 fromSpot: go.Spot.AllSides, // coming out from middle-right
@@ -1114,7 +1070,7 @@ class Renderer {
     }
 
     collapseFrom(rootNode) {
-        if(typeof rootNode === 'string'){
+        if (typeof rootNode === 'string') {
             rootNode = this.diagram.findNodeForKey(rootNode);
         }
         rootNode.diagram.model.setDataProperty(rootNode.data, 'isCollapsed', true);
@@ -1124,6 +1080,9 @@ class Renderer {
         while (queue.length > 0) {
             let newQueue = [];
             queue.forEach((currNode) => {
+                if (!currNode.data.visible) {
+                    return;
+                }
                 currNode.diagram.model.setDataProperty(currNode.data, 'visible', false);
                 currNode.diagram.model.setDataProperty(currNode.data, 'isCollapsed', true);
                 currNode.diagram.model.setDataProperty(currNode.data, 'expandedBy', false);
@@ -1144,9 +1103,36 @@ class Renderer {
         rootNode.diagram.layoutDiagram();
     }
 
+    expandFrom(rootNode) {
+
+        rootNode.diagram.model.setDataProperty(rootNode.data, 'isCollapsed', false);
+        let adjacent = rootNode.findNodesConnected();
+
+        adjacent.each((_node) => {
+            if (_node.data.visible) {
+                return;
+            }
+            _node.diagram.model.setDataProperty(_node.data, 'visible', true);
+            if (!_node.data.expandedBy) {
+                _node.diagram.model.setDataProperty(_node.data, 'expandedBy', rootNode.data.key);
+            }
+            let children = _node.findNodesConnected();
+
+            while (children.next()) {
+                let child = children.value;
+                if (!child.data.visible) {
+                    _node.diagram.model.setDataProperty(_node.data, 'showButton', true);
+                    break;
+                }
+            }
+        });
+        rootNode.diagram.layoutDiagram();
+
+    }
+
     focusOnNode(nodeID) {
         let node = this.diagram.findNodeForKey(nodeID);
-        if(node)
+        if (node)
             this.diagram.commandHandler.scrollToPart(node);
     }
 }
