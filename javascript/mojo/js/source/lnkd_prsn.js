@@ -22,6 +22,7 @@
              { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/3rdParty/searchbox.js' }, 
              { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/3rdParty/swal.js' }, 
              { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/images.js' }, 
+             { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/commandsManager.js' }, 
              { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/dataProcessor.js' }, 
              { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/facade.js' }, { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/main.js' }, { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/graph.js' }, { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/attributes.js' }, { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/scenario.js' }, { url: 'file://../plugins/lnkd_prsn/javascript/mojo/js/source/renderer.js' }],
             useRichTooltip: false,

@@ -61,7 +61,7 @@ const LINK_CATEGORIES = {
  * Class responsible for creation, manipulation and appearance of the GoJS visualization
  */
 class Renderer {
-    /**
+    /** Creates Renderer Object
      * @param {Object[]} data Parsed Microstrategy data
      * @param {string} HTMLElementId Id of the element where go.js visualization will be located
      * @param {Object} [mainEntityId] ID of the main diagram Node
@@ -256,7 +256,8 @@ class Renderer {
         }
     }
     /**
-     * @property {Function} deleteDiagram Deletes a GoJS diagram
+     * Deletes a GoJS diagram
+     * @return {null}
      */
     deleteDiagram() {
         if (this.diagram) {
@@ -266,7 +267,7 @@ class Renderer {
     }
 
     /**
-     * @property {Function} getNodeTemplateMap Creates every Node template, adds it to the template map and returns it
+     * Creates every Node template, adds it to the template map and returns it
      * @return { Object } GoJS Nodes Template Map
      */
     getNodeTemplateMap() {
@@ -288,34 +289,7 @@ class Renderer {
             });
         }
 
-        function collapseFrom(rootNode) {
-            rootNode.diagram.model.setDataProperty(rootNode.data, 'isCollapsed', true);
-
-            let queue = getNewNodes(rootNode);
-
-            while (queue.length > 0) {
-                let newQueue = [];
-                queue.forEach((currNode) => {
-                    currNode.diagram.model.setDataProperty(currNode.data, 'visible', false);
-                    currNode.diagram.model.setDataProperty(currNode.data, 'isCollapsed', true);
-                    currNode.diagram.model.setDataProperty(currNode.data, 'expandedBy', false);
-                    getNewNodes(currNode).forEach(foundNode => newQueue.push(foundNode));
-                });
-                queue = newQueue;
-            }
-            function getNewNodes(node) {
-                let res = [];
-                node.findNodesConnected().each(_node => {
-                    if (_node.data.expandedBy === node.data.key) {
-                        res.push(_node);
-                    }
-                });
-                return res;
-            }
-
-            rootNode.diagram.layoutDiagram();
-        }
-
+        
         function expandFrom(rootNode) {
 
             rootNode.diagram.model.setDataProperty(rootNode.data, 'isCollapsed', false);
@@ -352,7 +326,7 @@ class Renderer {
                 return;
             }
         }
-
+        let collapseFrom = this.collapseFrom;
         function toggleNode(e, obj) {
             e.diagram.startTransaction();
             var node = obj.part;
@@ -363,6 +337,7 @@ class Renderer {
             }
             e.diagram.commitTransaction('toggled visibility of dependencies');
         }
+        collapseFrom = null;
 
         function getNodeToolTip() {
             return _('ToolTip',
@@ -623,7 +598,7 @@ class Renderer {
 
 
     /**
-     * @property {Function} getLinkTemplateMap Creates every Link template, adds it to the template map and returns it
+     * Creates every Link template, adds it to the template map and returns it
      * @return { Object } GoJS Links Template Map
      */
     getLinkTemplateMap() {
@@ -1020,7 +995,7 @@ class Renderer {
     }
 
     /**
-     * @property {Function} getNodeCategory Helper function that accepts a number and returns NodeCategory
+     * Helper function that accepts a number and returns NodeCategory
      * @param {number} nodeCategoryCode 
      * @return {NODE_CATEGORIES} Node Category
      */
@@ -1044,7 +1019,7 @@ class Renderer {
     }
 
     /**
-     * @property {Function} getNodeColor Helper function that accepts a number and returns node color that will be used inside a Node's template to color itself 
+     * Helper function that accepts a number and returns node color that will be used inside a Node's template to color itself 
      * @param {number} nodeColorCode 
      * @return {NODE_COLORS} Node Color that will be used inside a template
      */
@@ -1065,10 +1040,10 @@ class Renderer {
         }
     }
     /**
-         * @property {Function} getLinkCategory Helper function that accepts a number and returns node color that will be used inside a Node's template to color itself 
-         * @param {number} linkCategoryCode Code for link category from the parsed MicroStrategy Data
-         * @return {LINK_CATEGORIES} Node Color that will be used inside a template
-         */
+     * Helper function that accepts a number and returns node color that will be used inside a Node's template to color itself 
+     * @param {number} linkCategoryCode Code for link category from the parsed MicroStrategy Data
+     * @return {LINK_CATEGORIES} Node Color that will be used inside a template
+     */
     getLinkCategory(linkCategoryCode) {
         if (linkCategoryCode === 0) // old link
             return LINK_CATEGORIES.OLD;
@@ -1089,8 +1064,7 @@ class Renderer {
     }
 
     /**
-     * @property {Function} nodeImageStringHelper  Accepts parameteres required to decide what image we should use in Node template. Method created to be sure that every node will have the coresponding images 
-     * 
+     * Accepts parameteres required to decide what image we should use in Node template. Method created to be sure that every node will have the coresponding images 
      * @param {string} entityType  "bank" | "gov" | "human"  
      * @param {string} color  "green" | "lightgreen" | "yellow" | "violet" | "ocean" | "white"
      * @param {boolean} isForeign If isForeign == true, image with red contour will be returned 
@@ -1137,5 +1111,42 @@ class Renderer {
             return DEFAULT_RETURN;
         }
         return VIS_IMAGES_BASE64[properyName].str;
+    }
+
+    collapseFrom(rootNode) {
+        if(typeof rootNode === 'string'){
+            rootNode = this.diagram.findNodeForKey(rootNode);
+        }
+        rootNode.diagram.model.setDataProperty(rootNode.data, 'isCollapsed', true);
+
+        let queue = getNewNodes(rootNode);
+
+        while (queue.length > 0) {
+            let newQueue = [];
+            queue.forEach((currNode) => {
+                currNode.diagram.model.setDataProperty(currNode.data, 'visible', false);
+                currNode.diagram.model.setDataProperty(currNode.data, 'isCollapsed', true);
+                currNode.diagram.model.setDataProperty(currNode.data, 'expandedBy', false);
+                getNewNodes(currNode).forEach(foundNode => newQueue.push(foundNode));
+            });
+            queue = newQueue;
+        }
+        function getNewNodes(node) {
+            let res = [];
+            node.findNodesConnected().each(_node => {
+                if (_node.data.expandedBy === node.data.key) {
+                    res.push(_node);
+                }
+            });
+            return res;
+        }
+
+        rootNode.diagram.layoutDiagram();
+    }
+
+    focusOnNode(nodeID) {
+        let node = this.diagram.findNodeForKey(nodeID);
+        if(node)
+            this.diagram.commandHandler.scrollToPart(node);
     }
 }

@@ -5,18 +5,20 @@ class Facade {
     constructor(data, HTMLElementId) {
         try {
             this.HTMLElementId = HTMLElementId;
-
+            this.rawData = data;
             this.data = this.removeDuplicateLinks(data);
             let links = this.data.map(el => {
                 return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] };
             });
             this.Graph = new Graph(links);
+            this.mainEntityId = '';
         } catch (error) {
             alert(`@facade constructor: ${error}`);
         }
 
     }
     updateData(data) {
+        this.rawData = data;
         this.data = this.removeDuplicateLinks(data);
         let links = this.data.map(el => { return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] }; });
         this.Graph = new Graph(links);
@@ -29,6 +31,7 @@ class Facade {
     }
 
     showAllNodesFrom(mainEntityId) {
+        this.mainEntityId = mainEntityId;
         this.deleteDiagram();
         delete this.renderer;
 
@@ -42,10 +45,12 @@ class Facade {
 
     showFrom(mainEntityId) {
         try {
+
             if (typeof mainEntityId !== 'string') return;
             this.deleteDiagram();
             delete this.renderer;
 
+            this.mainEntityId = mainEntityId;
             const currentCluster = this.Graph.findAvailableVertices(mainEntityId);
             if (!currentCluster) {
                 throw new Error('findAvailableVertices() returned no data');
@@ -58,7 +63,6 @@ class Facade {
             let nodesToShow = currentGraph.findOneEdgeChildren(mainEntityId);
 
             nodesToShow.push(mainEntityId);
-
             let nodesToShowDict = {};
             nodesToShow.forEach(element => {
                 nodesToShowDict[element] = true;
@@ -75,6 +79,7 @@ class Facade {
     }
 
     showFromTo(mainEntityId, secondEntityId, maxPathCount = 5, searchType = 'bfs') {
+        this.mainEntityId = mainEntityId;
         this.deleteDiagram();
         delete this.renderer;
         let availableLinks;
@@ -123,6 +128,7 @@ class Facade {
 
     deleteDiagram() {
         if (this.renderer) this.renderer.deleteDiagram();
+        this.mainEntityId = null;
     }
 
 
@@ -194,10 +200,18 @@ class Facade {
             return (currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
         });
         let keyNameArray = findUniqueEntitiesForAutocomplete(newData);
-        let autocompleteHelp = [];
-        keyNameArray.forEach((el) => {
+        return keyNameArray.map((el) => {
             autocompleteHelp.push(`${el.key} ⁃ ${el.name}`);
         });
-        return autocompleteHelp;
+    }
+
+    focusOnMainEntity() {
+        if (this.renderer)
+            this.renderer.focusOnNode(this.mainEntityId);
+    }
+
+    collapseAll() {
+        if (this.renderer)
+            this.renderer.collapseFrom(this.mainEntityId);
     }
 }
