@@ -68,7 +68,7 @@ class Renderer {
      * @param {Object} [nodesToShowDict] If nodeToShowDict[NodeId] equals to true, we show it in the diagram initialy
      * @param {Object} [prioritiesDict] Holds ids of the nodes as a properties names, there are values of node's priorities behind each key 
      */
-    constructor(data, HTMLElementId, mainEntityId, nodesToShowDict, prioritiesDict) {
+    constructor(data, HTMLElementId, mainEntityId, nodesToShowDict, prioritiesDict, options = {}) {
         try {
             /**
              * @property {diagram} diagram GoJS diagram object
@@ -194,8 +194,8 @@ class Renderer {
                         pairedNodeId: obj[DECOMPOSED_ATTRIBUTES.NODE2.ID],
                         color: this.getNodeColor(obj[DECOMPOSED_ATTRIBUTES.NODE1.COLOR]),
                         category: category,
-                        isCollapsed: priority === 1 ? false : true,
-                        'visible': true,
+                        isCollapsed: options.mode === 'chain' ? true : (priority === 1 ? false : true),
+                        'visible': visible,
                         'priority': priority,
                         tooltip: tooltip
                     });
@@ -213,8 +213,8 @@ class Renderer {
                         pairedNodeId: obj[DECOMPOSED_ATTRIBUTES.NODE1.ID],
                         color: this.getNodeColor(obj[DECOMPOSED_ATTRIBUTES.NODE2.COLOR]),
                         category: category,
-                        isCollapsed: priority === 1 ? false : true,
-                        'visible': true,
+                        isCollapsed: options.mode === 'chain' ? true : (priority === 1 ? false : true),
+                        'visible': visible,
                         'priority': priority,
                         tooltip: tooltip
                     });
@@ -224,7 +224,25 @@ class Renderer {
 
             this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
 
-
+            if (options.mode === 'chain') {
+                this.diagram.startTransaction();
+                Object.keys(nodesToShowDict).forEach(nodeID => {
+                    let node = this.diagram.findNodeForKey(nodeID);
+                    if (!node) {
+                        return;
+                    }
+                    let children = node.findNodesConnected();
+                    while (children.next()) {
+                        if (!children.value.data.visible) {
+                            return node.diagram.model.setDataProperty(node.data, 'showButton', true);
+                        }
+                    }
+                    node.diagram.model.setDataProperty(node.data, 'showButton', false);
+                });
+                this.diagram.commitTransaction('toggled visibility');
+                this.diagram.commandHandler.zoomToFit();
+                return this;
+            }
             this.diagram.startTransaction();
             this.diagram.nodes.each((node) => {
                 let priority = node.data.priority;
@@ -245,6 +263,7 @@ class Renderer {
                 }
             });
             this.diagram.commitTransaction('toggled visibility of dependencies');
+
             this.diagram.commandHandler.zoomToFit();
         } catch (e) {
             let Paragraph = document.createElement('p');
@@ -1125,6 +1144,7 @@ class Renderer {
                     break;
                 }
             }
+            _node.diagram.model.setDataProperty(_node.data, 'showButton', false);
         });
         rootNode.diagram.layoutDiagram();
 

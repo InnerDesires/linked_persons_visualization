@@ -238,8 +238,16 @@ class Graph {
 
             links = links.concat(newLinks);
         } while (visited.length > 1 && iterations < maxPathCount);
-
-        return links;
+        let uniqueIds = {};
+        links.forEach(link => {
+            if (!uniqueIds[link.from]) {
+                uniqueIds[link.from] = true;
+            }
+            if (!uniqueIds[link.to]) {
+                uniqueIds[link.to] = true;
+            }
+        });
+        return uniqueIds;
     }
 
     findOneEdgeChildren(mainEntityId) {
@@ -314,22 +322,20 @@ function bfsHelper(initialVertexId, endingVertexId, nodes, dict, set, toAvoid) {
         set.forEach(child => {
             if (child === vertex.id) return;
 
-            let visitedFlag = false;
+
             for (let i = 0; i < visited.length; i++) {
                 if (visited[i].id === child) {
-                    visitedFlag = true;
-                    break;
+                    return;
                 }
             }
-            let avoidFlag = false;
+
             for (let i = 0; i < toAvoid.length; i++) {
                 if ((toAvoid[i].id === child && toAvoid[i].parent === vertex.id) || (toAvoid[i].id === vertex.id && toAvoid[i].parent === child)) {
-                    avoidFlag = true;
-                    break;
+                    return;
                 }
                 //console.log(avoidFlag);
             }
-            if ((nodes[dict[vertex.id]][dict[child]] || nodes[dict[child]][dict[vertex.id]]) && !visitedFlag && !avoidFlag) {
+            if ((nodes[dict[vertex.id]][dict[child]] || nodes[dict[child]][dict[vertex.id]])) {
                 queque.push({ id: child, parent: vertex });
             }
         });

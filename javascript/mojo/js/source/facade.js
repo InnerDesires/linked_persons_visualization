@@ -82,48 +82,22 @@ class Facade {
         this.mainEntityId = mainEntityId;
         this.deleteDiagram();
         delete this.renderer;
-        let availableLinks;
-
-        // ? dfs - Deep First Search. Graph searching algorithm
         // ? bfs - Breadth First Search. Graph searching algorithm 
-        switch (searchType) {
-            case 'dfs':
-                availableLinks = this.Graph.findAvailableVerticesFromTo(mainEntityId, secondEntityId, maxPathCount);
-                break;
-            case 'bfs':
-                availableLinks = this.Graph.findAvailableVerticesFromToBFS(mainEntityId, secondEntityId, maxPathCount);
-                break;
-            default:
-                console.warn(`[showFromTo] Warning - provided search type (${searchType}) wasn't recognized. Using default search type - BFS.`);
-                availableLinks = this.Graph.findAvailableVerticesFromToBFS(mainEntityId, secondEntityId, maxPathCount);
-                break;
-        }
-
+        let availableLinksDict = this.Graph.findAvailableVerticesFromToBFS(mainEntityId, secondEntityId, maxPathCount);
         // if no avialable links were found/returned
-        if (!availableLinks) {
+        if (!availableLinksDict) {
             return Toast.fire({
                 icon: 'error',
                 title: 'Помилка при виборі осіб'
             });
         }
 
-        let uniqueIDs = [];
-        for (let index = 0; index < availableLinks.length; index++) {
-            const element = availableLinks[index];
-            if (!uniqueIDs.includes(element.from)) {
-                uniqueIDs.push(element.from);
-            }
-            if (!uniqueIDs.includes(element.to)) {
-                uniqueIDs.push(element.to);
-            }
-        }
-
+        let prioritiesDict = this.Graph.getRelativePriorities(mainEntityId);
         let dataToUse = this.data.filter(link => {
-            return uniqueIDs.includes(link[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && uniqueIDs.includes(link[DECOMPOSED_ATTRIBUTES.NODE2.ID]);
+            return availableLinksDict[link[DECOMPOSED_ATTRIBUTES.NODE1.ID]] || availableLinksDict[link[DECOMPOSED_ATTRIBUTES.NODE2.ID]];
         });
 
-
-        this.renderer = new Renderer(dataToUse, this.HTMLElementId);
+        this.renderer = new Renderer(dataToUse, this.HTMLElementId, mainEntityId, availableLinksDict, prioritiesDict, { mode: 'chain' });
     }
 
     deleteDiagram() {
@@ -201,7 +175,7 @@ class Facade {
         });
         let keyNameArray = findUniqueEntitiesForAutocomplete(newData);
         return keyNameArray.map((el) => {
-            autocompleteHelp.push(`${el.key} ⁃ ${el.name}`);
+            return `${el.key} ⁃ ${el.name}`;
         });
     }
 

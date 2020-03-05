@@ -133,7 +133,12 @@ class Graph {
         return resLinks;
 
     }
-
+    /**
+     * 
+     * @param {*} initialVertexId 
+     * @param {*} endingVertexId 
+     * @param {*} maxPathCount 
+     */
     findAvailableVerticesFromToBFS(initialVertexId, endingVertexId, maxPathCount = 5) {
         let t1 = performance.now();
 
@@ -259,7 +264,6 @@ function bfsHelper(initialVertexId, endingVertexId, nodes, dict, set, toAvoid) {
         [  { id: {String}, parent: {String} }, ... ]
     */
     let visited = [];
-
     /* 
         BFS is implemented using queue. For algorithm explanation visit https://en.wikipedia.org/wiki/Breadth-first_search 
     */
