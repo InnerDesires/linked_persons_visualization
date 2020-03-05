@@ -68,9 +68,8 @@ class Facade {
                 nodesToShowDict[element] = true;
             });
 
-            let prioritiesDict = currentGraph.getRelativePriorities(mainEntityId);
 
-            this.renderer = new Renderer(this.currentData, this.HTMLElementId, mainEntityId, nodesToShowDict, prioritiesDict);
+            this.renderer = new Renderer(this.currentData, this.HTMLElementId, mainEntityId, nodesToShowDict);
 
 
         } catch (error) {
@@ -78,26 +77,33 @@ class Facade {
         }
     }
 
-    showFromTo(mainEntityId, secondEntityId, maxPathCount = 5, searchType = 'bfs') {
-        this.mainEntityId = mainEntityId;
+    showFromTo(mainEntityId, secondEntityId, maxPathCount = 5, ) {
         this.deleteDiagram();
+        this.mainEntityId = mainEntityId;
         delete this.renderer;
+        const currentClusterVertices = this.Graph.findAvailableVertices(mainEntityId);
+        if (!currentClusterVertices) {
+            throw new Error('findAvailableVertices() returned no data');
+        }
+
+        
+        this.currentData = this.data.filter(row => {
+            return (currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
+        });
+        let currentGraph = new Graph(this.currentData.map(el => { return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] }; }));
+        let dataToUse = this.data.filter(row => {
+            return (currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
+        });
         // ? bfs - Breadth First Search. Graph searching algorithm 
-        let availableLinksDict = this.Graph.findAvailableVerticesFromToBFS(mainEntityId, secondEntityId, maxPathCount);
+        let includedNodesDict = currentGraph.findAvailableVerticesFromToBFS(mainEntityId, secondEntityId, maxPathCount);
         // if no avialable links were found/returned
-        if (!availableLinksDict) {
+        if (!includedNodesDict) {
             return Toast.fire({
                 icon: 'error',
                 title: 'Помилка при виборі осіб'
             });
         }
-
-        let prioritiesDict = this.Graph.getRelativePriorities(mainEntityId);
-        let dataToUse = this.data.filter(link => {
-            return availableLinksDict[link[DECOMPOSED_ATTRIBUTES.NODE1.ID]] || availableLinksDict[link[DECOMPOSED_ATTRIBUTES.NODE2.ID]];
-        });
-
-        this.renderer = new Renderer(dataToUse, this.HTMLElementId, mainEntityId, availableLinksDict, prioritiesDict, { mode: 'chain' });
+        this.renderer = new Renderer(dataToUse, this.HTMLElementId, mainEntityId, includedNodesDict, { mode: 'chain' });
     }
 
     deleteDiagram() {
@@ -180,8 +186,9 @@ class Facade {
     }
 
     focusOnMainEntity() {
-        if (this.renderer)
+        if (this.renderer){
             this.renderer.focusOnNode(this.mainEntityId);
+        }
     }
 
     collapseAll() {

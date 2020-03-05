@@ -58,6 +58,113 @@ const LINK_CATEGORIES = {
 };
 
 /**
+ * Helper function that accepts a number and returns NodeCategory
+ * @param {number} nodeCategoryCode 
+ * @return {NODE_CATEGORIES} Node Category
+ */
+function getNodeCategory(nodeCategoryCode) {
+    switch (true) {
+        case (nodeCategoryCode === 1):
+            return NODE_CATEGORIES.BANK;
+        case (nodeCategoryCode === 2):
+            return NODE_CATEGORIES.PS;
+        case (nodeCategoryCode === 3):
+            return NODE_CATEGORIES.BANKF;
+        case (nodeCategoryCode === 4):
+            return NODE_CATEGORIES.GOV;
+        case (nodeCategoryCode === 5):
+            return NODE_CATEGORIES.PSF;
+        case (nodeCategoryCode === 6):
+            return NODE_CATEGORIES.LS;
+        default:
+            return NODE_CATEGORIES.LS;
+    }
+}
+
+/**
+ * Used inside a Renderer contructor as a helper method.
+ * Accepts Row object, creates tooltip string for the Node using requied parameters. Fills in the error information 
+ * if required parameters are missing
+ * @function
+ * @name Renderer->constructor->createNodeTooltip
+ * @param {Object} obj Parsed Microstrategy data array element 
+ * @param {string} node "NODE1" || "NODE2"
+ * 
+ * @returns {string} String to be putted inside the Node's tooltip 
+ */
+function createNodeTooltip(obj, node) {
+    if (!obj || typeof node !== 'string') {
+        return;
+    }
+    try {
+        return `
+                    Назва / Ім'я: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].NAME] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].NAME]}
+                    K020: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].ID] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].ID]}
+                    Пов'язаність: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].RELATION] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].RELATION]}
+                    Пояснення пов'язаності: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].RELATION_EXPLANATION] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].RELATION_EXPLANATION]}
+                    Код категорії сутності: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY]}
+                    Код кольору: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].COLOR] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].COLOR]}
+                    `;
+    } catch (e) {
+        //alert(`@createNodeTooltip - ${e}`);
+        return 'Помилка при створенні підказки';
+    }
+}
+
+/**
+ * Helper function that accepts a number and returns node color that will be used inside a Node's template to color itself 
+ * @param {number} nodeColorCode 
+ * @return {NODE_COLORS} Node Color that will be used inside a template
+ */
+function getNodeColor(nodeColorCode) {
+    switch (true) {
+        case (nodeColorCode === 1):
+            return NODE_COLORS.GREEN;
+        case (nodeColorCode === 2):
+            return NODE_COLORS.LIGHTGREEN;
+        case (nodeColorCode === 3):
+            return NODE_COLORS.VIOLET;
+        case (nodeColorCode === 4):
+            return NODE_COLORS.YELLOW;
+        case (nodeColorCode === 5):
+            return NODE_COLORS.OCEAN;
+        default:
+            return NODE_COLORS.WHITE;
+    }
+}
+
+/**
+ * Used inside a Renderer contructor as a helper method.
+ * Accepts Row object, creates tooltip string for the Link using requied parameters. Fills in the error information 
+ * if required parameters are missing
+ * @function
+ * @name Renderer->constructor->createLinkTooltip
+ * @param {Row} obj Parsed Microstrategy data array element 
+ * @return {string} Link's tooltip string  
+ */
+function createLinkTooltipString(obj) {
+    if (!obj) {
+        return 'Помилка при створенні підказки';
+    }
+    const type = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION] : 'Тип не вказаний';
+    const begin = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.BEGIN] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.BEGIN] : 'Дата відсутня';
+    const end = obj[DECOMPOSED_ATTRIBUTES.LINK.END] ? obj[DECOMPOSED_ATTRIBUTES.LINK.END] : 'Зв\'язок актуальний';
+    const code = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE] : 'Код типу не вказаний';
+    const category = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY] : 'Категорія не вказана';
+    const from = (typeof obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME] : 'Помилка';
+    const to = (typeof obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME] : 'Помилка';
+
+    return `
+            Тип зв'язку: ${type}
+            Дата виникнення: ${begin}
+            Дата зникнення: ${end}
+            Код типу зв'язку: ${code}
+            Код категорії зв'язку: ${category}
+            Від: ${from}
+            До: ${to}
+            `;
+}
+/**
  * Class responsible for creation, manipulation and appearance of the GoJS visualization
  */
 class Renderer {
@@ -68,7 +175,7 @@ class Renderer {
      * @param {Object} [nodesToShowDict] If nodeToShowDict[NodeId] equals to true, we show it in the diagram initialy
      * @param {Object} [prioritiesDict] Holds ids of the nodes as a properties names, there are values of node's priorities behind each key 
      */
-    constructor(data, HTMLElementId, mainEntityId, nodesToShowDict, prioritiesDict, options = {}) {
+    constructor(data, HTMLElementId, mainEntityId, nodesToShowDict, options = {}) {
         try {
             /**
              * @property {diagram} diagram GoJS diagram object
@@ -90,68 +197,28 @@ class Renderer {
 
             let linkDataArray = [];
             let nodeDataArray = [];
-            /**
-             * Used inside a Renderer contructor as a helper method.
-             * Accepts Row object, creates tooltip string for the Node using requied parameters. Fills in the error information 
-             * if required parameters are missing
-             * @function
-             * @name Renderer->constructor->createNodeTooltip
-             * @param {Object} obj Parsed Microstrategy data array element 
-             * @param {string} node "NODE1" || "NODE2"
-             * 
-             * @returns {string} String to be putted inside the Node's tooltip 
-             */
-            function createNodeTooltip(obj, node) {
-                if (!obj || typeof node !== 'string') {
-                    return;
-                }
-                try {
-                    return `
-                    Назва / Ім'я: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].NAME] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].NAME]}
-                    K020: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].ID] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].ID]}
-                    Пов'язаність: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].RELATION] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].RELATION]}
-                    Пояснення пов'язаності: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].RELATION_EXPLANATION] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].RELATION_EXPLANATION]}
-                    Код категорії сутності: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY]}
-                    Код кольору: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].COLOR] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].COLOR]}
-                    `;
-                } catch (e) {
-                    //alert(`@createNodeTooltip - ${e}`);
-                    return 'Помилка при створенні підказки';
-                }
 
+            function createNodeObject(obj, node) {
+                if (!(node === 'NODE1' || node === 'NODE2')) {
+                    throw new Error('@renderer.constructor.createNodeObject: Error, recieved wrong node string');
+                }
+                let anotherNode = (node === 'NODE1') ? 'NODE2' : 'NODE1';
+                let category = getNodeCategory(obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY]);
+                let tooltip = createNodeTooltip(obj, 'NODE1');
+                return {
+                    key: obj[DECOMPOSED_ATTRIBUTES[node].ID],
+                    name: obj[DECOMPOSED_ATTRIBUTES[node].NAME],
+                    another: obj[DECOMPOSED_ATTRIBUTES[anotherNode].NAME],
+                    pairedNodeId: obj[DECOMPOSED_ATTRIBUTES[anotherNode].ID],
+                    color: getNodeColor(obj[DECOMPOSED_ATTRIBUTES[node].COLOR]),
+                    category: category,
+                    isCollapsed: true,
+                    visible: false,
+                    showButton: false,
+                    tooltip: tooltip
+                };
             }
 
-            /**
-             * Used inside a Renderer contructor as a helper method.
-             * Accepts Row object, creates tooltip string for the Link using requied parameters. Fills in the error information 
-             * if required parameters are missing
-             * @function
-             * @name Renderer->constructor->createLinkTooltip
-             * @param {Row} obj Parsed Microstrategy data array element 
-             * @return {string} Link's tooltip string  
-             */
-            function createLinkTooltipString(obj) {
-                if (!obj) {
-                    return 'Помилка при створенні підказки';
-                }
-                const type = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION] : 'Тип не вказаний';
-                const begin = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.BEGIN] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.BEGIN] : 'Дата відсутня';
-                const end = obj[DECOMPOSED_ATTRIBUTES.LINK.END] ? obj[DECOMPOSED_ATTRIBUTES.LINK.END] : 'Зв\'язок актуальний';
-                const code = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE] : 'Код типу не вказаний';
-                const category = (typeof obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY] : 'Категорія не вказана';
-                const from = (typeof obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME] : 'Помилка';
-                const to = (typeof obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME] !== 'undefined') ? obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME] : 'Помилка';
-
-                return `
-                    Тип зв'язку: ${type}
-                    Дата виникнення: ${begin}
-                    Дата зникнення: ${end}
-                    Код типу зв'язку: ${code}
-                    Код категорії зв'язку: ${category}
-                    Від: ${from}
-                    До: ${to}
-                `;
-            }
             data.forEach((obj) => {
                 let linkCat = this.getLinkCategory(obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY]);
                 let linkToolTip = createLinkTooltipString(obj);
@@ -183,50 +250,30 @@ class Renderer {
 
                 // if node wasn't found in preceding links - adding it to the Node Data Array
                 if (!K0201Found) {
-                    let category = this.getNodeCategory(obj[DECOMPOSED_ATTRIBUTES.NODE1.CATEGORY]);
-                    let visible = nodesToShowDict ? !!nodesToShowDict[obj[DECOMPOSED_ATTRIBUTES.NODE1.ID]] : true;
-                    let priority = prioritiesDict ? prioritiesDict[obj[DECOMPOSED_ATTRIBUTES.NODE1.ID]] : 1;
-                    let tooltip = createNodeTooltip(obj, 'NODE1');
-                    nodeDataArray.push({
-                        key: obj[DECOMPOSED_ATTRIBUTES.NODE1.ID],
-                        name: obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME],
-                        another: obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME],
-                        pairedNodeId: obj[DECOMPOSED_ATTRIBUTES.NODE2.ID],
-                        color: this.getNodeColor(obj[DECOMPOSED_ATTRIBUTES.NODE1.COLOR]),
-                        category: category,
-                        isCollapsed: options.mode === 'chain' ? true : (priority === 1 ? false : true),
-                        'visible': visible,
-                        'priority': priority,
-                        tooltip: tooltip
-                    });
+                    nodeDataArray.push(createNodeObject(obj, 'NODE1'));
                 }
                 if (!K0202Found) {
-
-                    let category = this.getNodeCategory(obj[DECOMPOSED_ATTRIBUTES.NODE2.CATEGORY]);
-                    let visible = nodesToShowDict ? !!nodesToShowDict[obj[DECOMPOSED_ATTRIBUTES.NODE2.ID]] : true;
-                    let priority = prioritiesDict ? prioritiesDict[obj[DECOMPOSED_ATTRIBUTES.NODE2.ID]] : 1;
-                    let tooltip = createNodeTooltip(obj, 'NODE2');
-                    nodeDataArray.push({
-                        key: obj[DECOMPOSED_ATTRIBUTES.NODE2.ID],
-                        name: obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME],
-                        another: obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME],
-                        pairedNodeId: obj[DECOMPOSED_ATTRIBUTES.NODE1.ID],
-                        color: this.getNodeColor(obj[DECOMPOSED_ATTRIBUTES.NODE2.COLOR]),
-                        category: category,
-                        isCollapsed: options.mode === 'chain' ? true : (priority === 1 ? false : true),
-                        'visible': visible,
-                        'priority': priority,
-                        tooltip: tooltip
-                    });
+                    nodeDataArray.push(createNodeObject(obj, 'NODE2'));
                 }
             });
 
 
             this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
-
             if (options.mode === 'chain') {
                 this.diagram.startTransaction();
-                Object.keys(nodesToShowDict).forEach(nodeID => {
+                let nodesToShow = Object.keys(nodesToShowDict);
+
+                nodesToShow.forEach(nodeID => {
+                    let node = this.diagram.findNodeForKey(nodeID);
+                    if (!node) {
+                        return;
+                    }
+                    node.diagram.model.setDataProperty(node.data, 'visible', true);
+                });
+                this.diagram.commitTransaction('toggled visibility');
+
+                this.diagram.startTransaction();
+                nodesToShow.forEach(nodeID => {
                     let node = this.diagram.findNodeForKey(nodeID);
                     if (!node) {
                         return;
@@ -234,41 +281,30 @@ class Renderer {
                     let children = node.findNodesConnected();
                     while (children.next()) {
                         if (!children.value.data.visible) {
-                            return node.diagram.model.setDataProperty(node.data, 'showButton', true);
+                            node.diagram.model.setDataProperty(node.data, 'showButton', true);
+                            break;
                         }
                     }
-                    node.diagram.model.setDataProperty(node.data, 'showButton', false);
                 });
-                this.diagram.commitTransaction('toggled visibility');
+                this.diagram.commitTransaction('toggled showButton');
                 this.diagram.commandHandler.zoomToFit();
                 return this;
             }
-            this.diagram.startTransaction();
-            this.diagram.nodes.each((node) => {
-                let priority = node.data.priority;
-                let visible = prioritiesDict ? (node.data.priority < 3) : true;
-                node.diagram.model.setDataProperty(node.data, 'visible', visible);
-                let children = node.findNodesConnected();
-                let toShow = false;
-                while (children.next()) {
-                    let child = children.value;
-                    if (child.data.priority > priority) {
-                        toShow = true;
-                        break;
-                    }
-                }
-                node.diagram.model.setDataProperty(node.data, 'showButton', toShow);
-                if (priority === 2) {
-                    node.diagram.model.setDataProperty(node.data, 'expandedBy', mainEntityId);
-                }
-            });
-            this.diagram.commitTransaction('toggled visibility of dependencies');
 
+
+            this.diagram.startTransaction();
+            let mainNode = this.diagram.findNodeForKey(mainEntityId);
+            if (!mainNode) {
+                throw new Error('@renderer.constructor: Error, mainNode wasn\'t found');
+            } else {
+                mainNode.diagram.model.setDataProperty(mainNode.data, 'visible', true);
+                this.expandFrom(mainNode);
+            }
+            this.diagram.commitTransaction('toggled visibility of dependencies');
             this.diagram.commandHandler.zoomToFit();
         } catch (e) {
             let Paragraph = document.createElement('p');
             Paragraph.innerHTML = e.stack;
-
             let el = document.getElementById(HTMLElementId);
             if (el) el.appendChild(Paragraph);
             alert(`@renderer.js ${e.stack}`);
@@ -969,51 +1005,9 @@ class Renderer {
         return linkTemplateMap;
     }
 
-    /**
-     * Helper function that accepts a number and returns NodeCategory
-     * @param {number} nodeCategoryCode 
-     * @return {NODE_CATEGORIES} Node Category
-     */
-    getNodeCategory(nodeCategoryCode) {
-        switch (true) {
-            case (nodeCategoryCode === 1):
-                return NODE_CATEGORIES.BANK;
-            case (nodeCategoryCode === 2):
-                return NODE_CATEGORIES.PS;
-            case (nodeCategoryCode === 3):
-                return NODE_CATEGORIES.BANKF;
-            case (nodeCategoryCode === 4):
-                return NODE_CATEGORIES.GOV;
-            case (nodeCategoryCode === 5):
-                return NODE_CATEGORIES.PSF;
-            case (nodeCategoryCode === 6):
-                return NODE_CATEGORIES.LS;
-            default:
-                return NODE_CATEGORIES.LS;
-        }
-    }
 
-    /**
-     * Helper function that accepts a number and returns node color that will be used inside a Node's template to color itself 
-     * @param {number} nodeColorCode 
-     * @return {NODE_COLORS} Node Color that will be used inside a template
-     */
-    getNodeColor(nodeColorCode) {
-        switch (true) {
-            case (nodeColorCode === 1):
-                return NODE_COLORS.GREEN;
-            case (nodeColorCode === 2):
-                return NODE_COLORS.LIGHTGREEN;
-            case (nodeColorCode === 3):
-                return NODE_COLORS.VIOLET;
-            case (nodeColorCode === 4):
-                return NODE_COLORS.YELLOW;
-            case (nodeColorCode === 5):
-                return NODE_COLORS.OCEAN;
-            default:
-                return NODE_COLORS.WHITE;
-        }
-    }
+
+
     /**
      * Helper function that accepts a number and returns node color that will be used inside a Node's template to color itself 
      * @param {number} linkCategoryCode Code for link category from the parsed MicroStrategy Data
@@ -1123,7 +1117,6 @@ class Renderer {
     }
 
     expandFrom(rootNode) {
-
         rootNode.diagram.model.setDataProperty(rootNode.data, 'isCollapsed', false);
         let adjacent = rootNode.findNodesConnected();
 
@@ -1139,9 +1132,11 @@ class Renderer {
 
             while (children.next()) {
                 let child = children.value;
+                if (child.data.key === rootNode.data.key) {
+                    continue;
+                }
                 if (!child.data.visible) {
-                    _node.diagram.model.setDataProperty(_node.data, 'showButton', true);
-                    break;
+                    return _node.diagram.model.setDataProperty(_node.data, 'showButton', true);
                 }
             }
             _node.diagram.model.setDataProperty(_node.data, 'showButton', false);
@@ -1152,7 +1147,8 @@ class Renderer {
 
     focusOnNode(nodeID) {
         let node = this.diagram.findNodeForKey(nodeID);
-        if (node)
+        if (node){
             this.diagram.commandHandler.scrollToPart(node);
+        }
     }
 }

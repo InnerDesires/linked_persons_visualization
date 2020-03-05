@@ -71,67 +71,6 @@ class Graph {
         return visited;
     }
 
-    getRelativePriorities(mainEntityId) {
-        if (typeof mainEntityId !== 'string') {
-            return [];
-        }
-
-        let nodes = this.nodes;
-        let dict = this.dict;
-        let uniqueIds = this.uniqueIds;
-
-        let priority = 1;
-        let prioritiesDict = {
-            [mainEntityId]: priority++
-        };
-        let queue = oneEdgeForPriority(mainEntityId);
-
-
-        while (priority < 2000) {
-            uniqueIds = arr_diff(queue, uniqueIds);
-            //var newArray = oldArray.slice();
-            let newQueue = [];
-            queue.forEach(el => {
-                prioritiesDict[el] = priority;
-                oneEdgeForPriority(el).forEach(newNode => {
-                    newQueue.push(newNode);
-                });
-            });
-
-            if (newQueue.length == 0) {
-                return prioritiesDict;
-            }
-            queue = newQueue.slice();
-            priority++;
-        }
-        function oneEdgeForPriority(mainEntityId) {
-            let resultIDs = [];
-            const mainEntityIndex = dict[mainEntityId];
-            if (typeof mainEntityIndex == 'undefined') {
-                alert('typeofundef');
-                return [];
-            }
-            const mainEntityRow = nodes[mainEntityIndex];
-            if (!mainEntityRow) {
-                alert('norow');
-                return [];
-            }
-
-            uniqueIds.forEach(id => {
-                if (prioritiesDict[id]) {
-                    return;
-                }
-                if (mainEntityRow[dict[id]] && (typeof prioritiesDict[dict[id]] == 'undefined')) {
-                    resultIDs.push(id);
-                }
-            });
-            return resultIDs;
-        }
-
-        return prioritiesDict;
-    }
-
-
 
     findAvailableVerticesFromTo(initialVertexId, endingVertexId, maxPathCount = 5) {
         const set1 = this.findAvailableVertices(initialVertexId);
@@ -220,34 +159,37 @@ class Graph {
                 return undefined;
             }
         }
+        try {
+            let toAvoid = [];
+            let links = [];
+            let visited = [];
+            let iterations = 0;
+            do {
+                iterations++;
+                visited = bfsHelper(initialVertexId, endingVertexId, this.nodes, this.dict, set1, toAvoid);
+                let vertex = visited[visited.length - 1];
+                let newLinks = [];
+                while (vertex.parent) {
+                    toAvoid.push({ id: vertex.id, parent: vertex.parent.id });
+                    newLinks.push({ to: vertex.id, from: vertex.parent.id });
+                    vertex = vertex.parent;
+                }
 
-        let toAvoid = [];
-        let links = [];
-        let visited = [];
-        let iterations = 0;
-        do {
-            iterations++;
-            visited = bfsHelper(initialVertexId, endingVertexId, this.nodes, this.dict, set1, toAvoid);
-            let vertex = visited[visited.length - 1];
-            let newLinks = [];
-            while (vertex.parent) {
-                toAvoid.push({ id: vertex.id, parent: vertex.parent.id });
-                newLinks.push({ to: vertex.id, from: vertex.parent.id });
-                vertex = vertex.parent;
-            }
-
-            links = links.concat(newLinks);
-        } while (visited.length > 1 && iterations < maxPathCount);
-        let uniqueIds = {};
-        links.forEach(link => {
-            if (!uniqueIds[link.from]) {
-                uniqueIds[link.from] = true;
-            }
-            if (!uniqueIds[link.to]) {
-                uniqueIds[link.to] = true;
-            }
-        });
-        return uniqueIds;
+                links = links.concat(newLinks);
+            } while (visited.length > 1 && iterations < maxPathCount);
+            let uniqueIds = {};
+            links.forEach(link => {
+                if (!uniqueIds[link.from]) {
+                    uniqueIds[link.from] = true;
+                }
+                if (!uniqueIds[link.to]) {
+                    uniqueIds[link.to] = true;
+                }
+            });
+            return uniqueIds;
+        } catch (err) {
+            alert(`@bfs - ${err}`);
+        }
     }
 
     findOneEdgeChildren(mainEntityId) {
