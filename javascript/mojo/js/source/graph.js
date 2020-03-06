@@ -129,67 +129,103 @@ class Graph {
 
     }
 
-    findAvailableVerticesFromToBFS(initialVertexId, endingVertexId, maxPathCount = 5) {
+    findAvailableVerticesFromToNew(initialVertexId, endingVertexId, maxPathCount = 5) {
+        let cluster = this.findAvailableVertices(initialVertexId);
+        if (!(cluster.includes(initialVertexId) && cluster.includes(endingVertexId)))
+            throw new Error('Vertices dont belong to the same cluster');
 
-        const set1 = this.findAvailableVertices(initialVertexId);
-        const set2 = this.findAvailableVertices(endingVertexId);
+        function backtrace(start, end, path) {
+            let res = [end];
 
-        if (set1.length !== set2.length) {
-            // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
-            console.log('Sets lengthes aren\'t equal');
-            return undefined;
+            let maxIterations = 2000;
+            let i = 0;
+            while (res[res.length - 1] !== start) {
+                if (i++ > maxIterations) {
+                    return [];
+                }
+                res.push(path[res[res.length - 1]]);
+            }
+            return res;
         }
 
-        /* 
-            even if the lengthes of subgraphs are equal, we have to check if theese subGraphs are same.
-            Sorting arrays before performing iterative elements comparison
-        */
-
-        set1.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
-
-        set2.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
-
-        for (let i = 0; i < set1.length; i++) {
-            if (set1[i] !== set2[i]) {
-                console.log('Sets aren\'t equal');
-                return undefined;
+        function doAvoid(pathesToAvoid, node, child) {
+            for (let k = 0; k < pathesToAvoid.length; k++) {
+                for (let i = 0; i < pathesToAvoid[k].length - 1; i++) {
+                    if ((node == pathesToAvoid[k][i] && child == pathesToAvoid[k][i + 1]) || (node == pathesToAvoid[k][i + 1] && child == pathesToAvoid[k][i])) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
-        try {
-            let toAvoid = [];
-            let links = [];
-            let visited = [];
-            let iterations = 0;
-            do {
-                iterations++;
-                visited = bfsHelper(initialVertexId, endingVertexId, this.nodes, this.dict, set1, toAvoid);
-                let vertex = visited[visited.length - 1];
-                let newLinks = [];
-                while (vertex.parent) {
-                    toAvoid.push({ id: vertex.id, parent: vertex.parent.id });
-                    newLinks.push({ to: vertex.id, from: vertex.parent.id });
-                    vertex = vertex.parent;
-                }
 
-                links = links.concat(newLinks);
-            } while (visited.length > 1 && iterations < maxPathCount);
-            let uniqueIds = {};
-            links.forEach(link => {
-                if (!uniqueIds[link.from]) {
-                    uniqueIds[link.from] = true;
+        function getNewNeighbours(node, am, v, idToUse, nodesToAvoid, pathesToAvoid) {
+            let result = []; // array with neighbours IDs
+            idToUse.forEach(id => {
+                if (nodesToAvoid[id]) {
+                    return;
                 }
-                if (!uniqueIds[link.to]) {
-                    uniqueIds[link.to] = true;
+                if (am[v[node]][v[id]] && !doAvoid(pathesToAvoid, node, id)) {
+                    result.push(id);
                 }
             });
-            return uniqueIds;
-        } catch (err) {
-            alert(`@bfs - ${err}`);
+            return result;
         }
+
+        function findPath(idToUse, am, vocabulary, pathesToAvoid) {
+            let queue = [initialVertexId];
+            let nodesToAvoid = {};
+            nodesToAvoid[initialVertexId] = true;
+            let path = {};
+            const maxIterations = 20000;
+            let iterations = 0;
+            while (queue.length && maxIterations > iterations++) {
+                let currentNode = queue.shift();
+                if (currentNode == endingVertexId) {
+                    return backtrace(initialVertexId, endingVertexId, path);
+                }
+                nodesToAvoid[currentNode] = true;
+                let newNeighbours = getNewNeighbours(currentNode, am, vocabulary, idToUse, nodesToAvoid, pathesToAvoid);
+                newNeighbours.forEach(el => {
+                    if (nodesToAvoid[el]) {
+                        return;
+                    }
+                    path[el] = currentNode;
+                    nodesToAvoid[el] = true;
+                    queue.push(el);
+                });
+            }
+            return [];
+        }
+        Array.prototype.remove = function () {
+            var what, a = arguments, L = a.length, ax;
+            while (L && this.length) {
+                what = a[--L];
+                while ((ax = this.indexOf(what)) !== -1) {
+                    this.splice(ax, 1);
+                }
+            }
+            return this;
+        };
+
+        let pathesCount = 0;
+        let resIds = [];
+        let pathesToAvoid = [];
+        while (pathesCount++ < maxPathCount) {
+            let newIds = findPath(cluster, this.nodes, this.dict, pathesToAvoid);
+            if (newIds.length === 0) {
+                return resIds;
+            }
+            newIds.forEach(id => {
+                if (id === initialVertexId || id === endingVertexId) {
+                    return;
+                }
+                cluster.remove(id);
+            });
+            pathesToAvoid.push(newIds);
+            resIds = resIds.concat(newIds);
+        }
+        return resIds;
     }
 
     findOneEdgeChildren(mainEntityId) {
@@ -211,86 +247,6 @@ class Graph {
     }
 }
 
-function addNewLinks(arr1, arr2) {
-    for (let index = 0; index < arr2.length - 1; index++) {
-        const link = { to: arr2[index], from: arr2[index + 1] };
-        const linkReverse = { to: arr2[index + 1], from: arr2[index] };
-        let foundSame = false;
-        for (let k = 0; k < arr1.length; k++) {
-            if ((arr1[k].to == link.to && arr1[k].from == link.from) ||
-                (arr1[k].to == linkReverse.to && arr1[k].from == linkReverse.from)) {
-                foundSame = true;
-                break;
-            }
-        }
-        if (!foundSame) {
-            arr1.push(link);
-        }
-    }
-
-    return arr1;
-}
-
-function bfsHelper(initialVertexId, endingVertexId, nodes, dict, set, toAvoid) {
-    /* 
-        Storage for visited nodes represented as array of objects with following structure: 
-        [  { id: {String}, parent: {String} }, ... ]
-    */
-    let visited = [];
-
-    /* 
-        BFS is implemented using queue. For algorithm explanation visit https://en.wikipedia.org/wiki/Breadth-first_search 
-    */
-    let queque = [];
-
-    /*
-        Flag to indicate that destination node was reached and there is no need
-        to continue traversing the graph inside the recursive function    
-    */
-    let destinationReached = false;
-
-    function traverse(vertex) {
-        if (destinationReached) {
-            return;
-        }
-
-        visited.push(vertex);
-
-        if (vertex.id == endingVertexId) {
-            destinationReached = true;
-            return;
-        }
-
-        set.forEach(child => {
-            if (child === vertex.id) return;
-
-
-            for (let i = 0; i < visited.length; i++) {
-                if (visited[i].id === child) {
-                    return;
-                }
-            }
-
-            for (let i = 0; i < toAvoid.length; i++) {
-                if ((toAvoid[i].id === child && toAvoid[i].parent === vertex.id) || (toAvoid[i].id === vertex.id && toAvoid[i].parent === child)) {
-                    return;
-                }
-                //console.log(avoidFlag);
-            }
-            if ((nodes[dict[vertex.id]][dict[child]] || nodes[dict[child]][dict[vertex.id]])) {
-                queque.push({ id: child, parent: vertex });
-            }
-        });
-        if (queque.length == 0) {
-            return;
-        }
-        traverse(queque.shift());
-    }
-
-    traverse({ id: initialVertexId, parent: null });
-
-    return visited;
-}
 
 function arr_diff(a1, a2) {
     var a = [], diff = [];

@@ -175,7 +175,7 @@ class Renderer {
      * @param {Object} [nodesToShowDict] If nodeToShowDict[NodeId] equals to true, we show it in the diagram initialy
      * @param {Object} [prioritiesDict] Holds ids of the nodes as a properties names, there are values of node's priorities behind each key 
      */
-    constructor(data, HTMLElementId, mainEntityId, nodesToShowDict, options = {}) {
+    constructor(data, HTMLElementId, mainEntityId, nodesToShow, options = {}) {
         try {
             /**
              * @property {diagram} diagram GoJS diagram object
@@ -261,7 +261,6 @@ class Renderer {
             this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
             if (options.mode === 'chain') {
                 this.diagram.startTransaction();
-                let nodesToShow = Object.keys(nodesToShowDict);
 
                 nodesToShow.forEach(nodeID => {
                     let node = this.diagram.findNodeForKey(nodeID);

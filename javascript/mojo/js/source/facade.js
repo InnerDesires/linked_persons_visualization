@@ -95,15 +95,15 @@ class Facade {
             return (currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
         });
         // ? bfs - Breadth First Search. Graph searching algorithm 
-        let includedNodesDict = currentGraph.findAvailableVerticesFromToBFS(mainEntityId, secondEntityId, maxPathCount);
+        let includedNodes = currentGraph.findAvailableVerticesFromToNew(mainEntityId, secondEntityId, maxPathCount);
         // if no avialable links were found/returned
-        if (!includedNodesDict) {
+        if (!includedNodes) {
             return Toast.fire({
                 icon: 'error',
                 title: 'Помилка при виборі осіб'
             });
         }
-        this.renderer = new Renderer(dataToUse, this.HTMLElementId, mainEntityId, includedNodesDict, { mode: 'chain' });
+        this.renderer = new Renderer(dataToUse, this.HTMLElementId, mainEntityId, includedNodes, { mode: 'chain' });
     }
 
     deleteDiagram() {
