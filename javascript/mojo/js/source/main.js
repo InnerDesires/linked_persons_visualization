@@ -67,12 +67,11 @@ function main(me, options) {
                 window.facade.showFrom(visType.mainEntityId);
                 break;
             case 'chain':
-                maxPathCount = 5;
+                maxPathCount = 10;
                 searchType = 'bfs';
                 window.facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
                 break;
             case 'all':
-
                 window.facade.showAll();
                 break;
             case 'canceled':
@@ -86,7 +85,7 @@ function main(me, options) {
         /*  Get the data from MSTR in JSON format  */
         return me.dataInterface.getRawData(
             mstrmojo.models.template.DataInterface.ENUM_RAW_DATA_FORMAT.ROWS_ADV,
-            { hasSelection: true, hasTitleName: true });
+            { hasSelection: true, hasTitleName: true, hasThreshold: true });
     }
 
     function isMstrObjectsEqual(a, b) {
@@ -103,8 +102,11 @@ function main(me, options) {
             }
         }
 
-        for (let i = 0; i < a.headers.length; i++) {
-            if (a.headers[i].rv !== b.headers[i].rv) {
+        for (let i = 0; i < a.values.length; i++) {
+            if (a.values[i].rv !== b.values[i].rv) {
+                return false;
+            }
+            if (a.values[i].threshold !== b.values[i].threshold) {
                 return false;
             }
         }
@@ -114,28 +116,11 @@ function main(me, options) {
     try {
         // getting data from mstr
         let dataArr = getMstrData();
-        // Since processData() is a expensive function we should only call it in cases when parsedData was never created
-        // or has been changed. To compare
-        let dataChanged = true;
-        if (typeof window.dataSampleToCompareWith !== 'object') {
-            window.dataSampleToCompareWith = {
-                first: dataArr[0],
-                last: dataArr[dataArr.length - 1]
-            };
-        } else {
-            const oldSample = window.dataSampleToCompareWith;
-            window.dataSampleToCompareWith = {
-                first: dataArr[0],
-                last: dataArr[dataArr.length - 1]
-            };
-            if (dataArr.length == window.facade.rawData.length) {
-                dataChanged = (!isMstrObjectsEqual(window.dataSampleToCompareWith.first, oldSample.first) || !isMstrObjectsEqual(window.dataSampleToCompareWith.last, oldSample.last));
-            }
-        }
+
         if (typeof window.facade !== 'object') {
             this.parsedData = processData(me, dataArr);
             window.facade = new Facade(parsedData, me.domNode.id, me);
-        } else if (dataChanged) {
+        } else {
             this.parsedData = processData(me, dataArr);
             window.facade.updateData(parsedData);
         }

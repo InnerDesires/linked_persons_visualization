@@ -222,7 +222,8 @@ class Renderer {
             data.forEach((obj) => {
                 let linkCat = this.getLinkCategory(obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY]);
                 let linkToolTip = createLinkTooltipString(obj);
-                // adding  the array of links
+                /*                 alert(obj[DECOMPOSED_ATTRIBUTES.LINK.COLOR]);
+                 */                // adding  the array of links
                 linkDataArray.push({
                     from: obj[DECOMPOSED_ATTRIBUTES.NODE2.ID],
                     to: obj[DECOMPOSED_ATTRIBUTES.NODE1.ID],
@@ -232,7 +233,8 @@ class Renderer {
                     fromName: obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME],
                     toName: obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME],
                     T0901: obj[DECOMPOSED_ATTRIBUTES.LINK.SHARE],
-                    tooltip: linkToolTip
+                    tooltip: linkToolTip,
+                    color: obj[DECOMPOSED_ATTRIBUTES.LINK.COLOR]
                 });
 
 
@@ -618,7 +620,7 @@ class Renderer {
                     _(go.Shape, 'Rectangle', { fill: 'white', stroke: 'black' }),
                     _(go.Panel, 'Vertical',
                         _(go.TextBlock, { margin: 5, width: 300 },
-                            new go.Binding('text', 'tooltip', (tooltip = 'Помилка при створенні підказки') => tooltip))
+                            new go.Binding('text', 'tooltip', (tooltip) => { return toolTip || 'Помилка при створенні підказки'; }))
                     )
                 ) // end Panel 
             );  // end Adornment 
@@ -634,7 +636,7 @@ class Renderer {
                     toShortLength: 3,
                     fromShortLength: 3,
                 },
-                _(go.Shape, { strokeWidth: 3 }
+                _(go.Shape, { strokeWidth: 3 }, new go.Binding('fill', 'color'), new go.Binding('stroke', 'color')
                     /*,
                                     // the Shape.stroke color depends on whether Link.isHighlighted is true
                                     new go.Binding('stroke", "isHighlighted", function (h) {
@@ -648,15 +650,13 @@ class Renderer {
                                         .ofObject()
                     */
                 ),
-                _(go.Shape, { toArrow: 'Block' },
+                _(go.Shape, { toArrow: 'Block' }, new go.Binding('fill', 'color'), new go.Binding('stroke', 'color'),
                     // the Shape.fill color depends on whether Link.isHighlighted is true
-                    new go.Binding('fill', 'isHighlighted', function (h) {
-                        return h ? 'red' : 'black';
-                    }).ofObject()),
-                _(go.Shape, { fromArrow: 'BackwardTriangle' }),
+                    new go.Binding('fill', 'color'), new go.Binding('stroke', 'color')),
+                _(go.Shape, { fromArrow: 'BackwardTriangle' }, new go.Binding('fill', 'color'), new go.Binding('stroke', 'color')),
                 {
                     toolTip: getLinkAdorment()
-                }
+                }, new go.Binding('fill', 'color'), new go.Binding('stroke', 'color')
             );
 
         let founderLink =
@@ -725,12 +725,12 @@ class Renderer {
                         let res = parseInt(T0901, 10) / 4;
                         return res < 1 ? 1 : res;
                     }
-                    )),
+                    ), new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     toArrow: '',
                     fill: '#f79d91',
                     stroke: '#f79d91',
-                }),
+                }), new go.Binding('fill', 'color'), new go.Binding('stroke', 'color'),
                 _(go.Shape, {
                     fromArrow: 'BackwardTriangle',
                     fill: '#f79d91',
@@ -752,7 +752,7 @@ class Renderer {
                         return 5;
                     }
                     return 1;
-                })),
+                }), new go.Binding('fill', 'color'), new go.Binding('stroke', 'color')),
                 _(go.Panel, 'Auto',
                     _(go.Shape, 'RoundedRectangle', // the label background, which becomes transparent around the edges
                         {
@@ -763,7 +763,8 @@ class Renderer {
                                 return true;
                             }
                             return false;
-                        })),
+                        }),
+                        new go.Binding('fill', 'color')),
                     _(go.TextBlock, 'pr',  // the label text
                         {
                             textAlign: 'center',
@@ -846,18 +847,18 @@ class Renderer {
                         let res = parseInt(T0901, 10) / 4;
                         return res < 1 ? 1 : res;
                     }
-                    )),
+                    ), new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     toArrow: '',
                     fill: '#8d9dd0',
                     stroke: '#8d9dd0',
-                }),
+                }), new go.Binding('fill', 'color'), new go.Binding('stroke', 'color'),
                 _(go.Shape, {
                     fromArrow: 'BackwardTriangle',
                     fill: '#8d9dd0',
                     stroke: '#8d9dd0',
                     scale: 2
-                }, new go.Binding('scale', 'T0901', (T0901) => {
+                }, new go.Binding('stroke', 'color'), new go.Binding('fill', 'color'), new go.Binding('scale', 'T0901', (T0901) => {
                     if (T0901 <= 25) {
                         return 1;
                     }
@@ -877,7 +878,7 @@ class Renderer {
                         {
                             fill: '#8d9dd0',
                             stroke: null
-                        }, new go.Binding('visible', 'T0901', (t) => {
+                        }, new go.Binding('fill', 'color'), new go.Binding('visible', 'T0901', (t) => {
                             if (parseFloat(t)) {
                                 return true;
                             }
@@ -911,7 +912,7 @@ class Renderer {
                 _(go.Shape, {
                     strokeWidth: 2,
                     stroke: '#f9d491'
-                }),
+                }, new go.Binding('stroke', 'color')),
                 {
                     toolTip: getLinkAdorment()
                 }
@@ -927,7 +928,7 @@ class Renderer {
                 _(go.Shape, {
                     strokeWidth: 3,
                     stroke: '#bbbbbb'
-                }),
+                }, new go.Binding('stroke', 'color')),
                 {
                     toolTip: getLinkAdorment()
                 }
@@ -943,19 +944,19 @@ class Renderer {
                 _(go.Shape, {
                     strokeWidth: 3,
                     stroke: '#f79d91' // old 
-                }),
+                }, new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     strokeWidth: 2,
                     toArrow: 'Circle',
                     fill: 'white',
                     stroke: '#f79d91',
-                }),
+                }, new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     strokeWidth: 2,
                     fromArrow: 'Circle',
                     fill: 'white',
                     stroke: '#f79d91'
-                }),
+                }, new go.Binding('stroke', 'color')),
                 {
                     toolTip: getLinkAdorment()
                 }
@@ -971,19 +972,19 @@ class Renderer {
                 _(go.Shape, {
                     strokeWidth: 3,
                     stroke: '#ff78e2'
-                }),
+                }, new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     strokeWidth: 2,
                     toArrow: 'Block',
                     fill: 'white',
                     stroke: '#ff78e2',
-                }),
+                }, new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     strokeWidth: 2,
                     fromArrow: 'Block',
                     fill: 'white',
                     stroke: '#ff78e2'
-                }),
+                }, new go.Binding('stroke', 'color')),
                 {
                     toolTip: getLinkAdorment()
                 }
@@ -1146,7 +1147,7 @@ class Renderer {
 
     focusOnNode(nodeID) {
         let node = this.diagram.findNodeForKey(nodeID);
-        if (node){
+        if (node) {
             this.diagram.commandHandler.scrollToPart(node);
         }
     }

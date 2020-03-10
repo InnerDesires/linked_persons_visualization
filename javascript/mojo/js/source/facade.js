@@ -77,7 +77,7 @@ class Facade {
         }
     }
 
-    showFromTo(mainEntityId, secondEntityId, maxPathCount = 5, ) {
+    showFromTo(mainEntityId, secondEntityId, maxPathCount = 10,) {
         this.deleteDiagram();
         this.mainEntityId = mainEntityId;
         delete this.renderer;

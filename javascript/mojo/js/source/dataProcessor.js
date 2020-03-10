@@ -23,6 +23,7 @@ const DECOMPOSED_ATTRIBUTES = {
         BEGIN: 'linkBegin',
         END: 'linkEnd',
         CATEGORY: 'linkCategory',
+        COLOR: 'linkColor'
     },
     BANK: {
         TXT: 'rootBankName',
@@ -112,6 +113,7 @@ function processData(me, data) {
             {
                 name: 'Категорія зв\'язку',
                 expectedType: TYPES.METRIC,
+                parseThreshold: DECOMPOSED_ATTRIBUTES.LINK.COLOR,
                 transitionTo: [DECOMPOSED_ATTRIBUTES.LINK.CATEGORY]
             },//11
             {
@@ -181,7 +183,8 @@ function processData(me, data) {
 
             'Категорія зв\'язку': {
                 expectedType: TYPES.METRIC,
-                transitionTo: [DECOMPOSED_ATTRIBUTES.LINK.CATEGORY]
+                transitionTo: [DECOMPOSED_ATTRIBUTES.LINK.CATEGORY],
+                parseThreshold: DECOMPOSED_ATTRIBUTES.LINK.COLOR,
             },//11
 
             'Банк': {
@@ -329,6 +332,11 @@ function processData(me, data) {
                 if (workingQueque && workingQueque.length > 0) {
                     let attributeName = workingQueque.shift();
                     templateObj[attributeName] = value.rv;
+                }
+
+                if (typeof currentZone.parseThreshold === 'string' && value.threshold && value.threshold.fillColor) {
+
+                    templateObj[currentZone.parseThreshold] = value.threshold.fillColor;
                 }
             });
             resArr.push(templateObj);

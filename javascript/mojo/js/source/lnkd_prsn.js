@@ -31,6 +31,7 @@
             plot: function () {
                                 
                 try {
+                    this.addThresholdMenuItem();
                     entryPoint(this);
                 } catch (error) {
                     alert(error);

@@ -71,64 +71,6 @@ class Graph {
         return visited;
     }
 
-
-    findAvailableVerticesFromTo(initialVertexId, endingVertexId, maxPathCount = 5) {
-        const set1 = this.findAvailableVertices(initialVertexId);
-        const set2 = this.findAvailableVertices(endingVertexId);
-        if (set1.length !== set2.length) {
-            console.log('Sets lengthes aren\'t equal'); // means that initial vertex and ending vertex are the part of different subgraphs and can't be reachable from each other
-            return undefined;
-        }
-
-        // even if the lengthes of subgraphs are equal we have to check if theese subGraphs are same 
-        // sorting the elements before performing iterative elements comparison 
-
-        set1.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
-        set2.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
-
-        for (let i = 0; i < set1.length; i++) {
-            if (set1[i] !== set2[i]) {
-                return undefined;
-            }
-        }
-
-        let resLinks = [];
-        let pathes = [];
-        let visited = [];
-        let uniqueIds = set1;
-        const nodes = this.nodes;
-        const dict = this.dict;
-        let pathesCount = 0;
-
-        function traverse(vertex) {
-            if (pathesCount > maxPathCount) return;
-            visited.push(vertex);
-            if (vertex == endingVertexId) {
-                pathes.push([...visited]);
-                pathesCount++;
-                resLinks = addNewLinks(resLinks, visited);
-                visited.pop();
-            } else {
-                let neighbors = uniqueIds.filter(id => nodes[dict[vertex]][dict[id]]);
-                neighbors.forEach(neighbor => {
-                    if (!visited.includes(neighbor)) {
-                        traverse(neighbor);
-                    }
-                });
-                visited.pop();
-            }
-        }
-
-        traverse(initialVertexId);
-
-        return resLinks;
-
-    }
-
     findAvailableVerticesFromToNew(initialVertexId, endingVertexId, maxPathCount = 5) {
         let cluster = this.findAvailableVertices(initialVertexId);
         if (!(cluster.includes(initialVertexId) && cluster.includes(endingVertexId)))
