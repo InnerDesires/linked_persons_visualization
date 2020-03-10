@@ -2,5 +2,10 @@
     "powermode.enabled": true,
     "powermode.enableShake": false,
     "powermode.explosionSize": 10,
-    "editor.fontFamily": "Hack, monospace"
+    "editor.fontFamily": "Hack, monospace",
+    "editor.minimap.maxColumn": 60,
+    "editor.minimap.showSlider": "always",
+    "files.exclude": {
+        "diag_test": true
+    }
 }

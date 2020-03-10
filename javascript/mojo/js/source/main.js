@@ -7,6 +7,12 @@ function entryPoint(me) {
 
     let buttons = [
         {
+            innerHTML: 'Інша діаграма',
+            onClick: () => {
+                main(me, { forcedReload: true });
+            }
+        },
+        {
             innerHTML: 'Відобразити всі дані',
             onClick: () => {
                 Swal.fire({
@@ -40,11 +46,6 @@ function entryPoint(me) {
                 if (window.facade) {
                     window.facade.collapseAll();
                 }
-            }
-        }, {
-            innerHTML: 'Інша діаграма',
-            onClick: () => {
-                main(me, { forcedReload: true });
             }
         }];
     addUtilsMenu(me.domNode, buttons);

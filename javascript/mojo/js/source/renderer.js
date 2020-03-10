@@ -299,6 +299,7 @@ class Renderer {
                 throw new Error('@renderer.constructor: Error, mainNode wasn\'t found');
             } else {
                 mainNode.diagram.model.setDataProperty(mainNode.data, 'visible', true);
+                mainNode.diagram.model.setDataProperty(mainNode.data, 'showButton', true);
                 this.expandFrom(mainNode);
             }
             this.diagram.commitTransaction('toggled visibility of dependencies');
@@ -620,7 +621,7 @@ class Renderer {
                     _(go.Shape, 'Rectangle', { fill: 'white', stroke: 'black' }),
                     _(go.Panel, 'Vertical',
                         _(go.TextBlock, { margin: 5, width: 300 },
-                            new go.Binding('text', 'tooltip', (tooltip) => { return toolTip || 'Помилка при створенні підказки'; }))
+                            new go.Binding('text', 'tooltip'))
                     )
                 ) // end Panel 
             );  // end Adornment 
@@ -737,9 +738,7 @@ class Renderer {
                     stroke: '#f79d91',
                     scale: 2
                 }, new go.Binding('scale', 'T0901', (T0901) => {
-
                     if (T0901 <= 25) {
-
                         return 1;
                     }
                     if (T0901 > 25 && T0901 <= 50) {
