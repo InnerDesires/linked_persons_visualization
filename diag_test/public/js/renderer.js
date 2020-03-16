@@ -431,6 +431,7 @@ class Renderer {
         templateMap.add("BankF", foreignBankNode);
         templateMap.add("PSF", foreignPhysicalSubjectNode);
         templateMap.add("LS", legalSubjectNode);
+        templateMap.add("LSF", foreignLegalSubjectNode);
         templateMap.add("GOV", govNode);
 
         return templateMap;

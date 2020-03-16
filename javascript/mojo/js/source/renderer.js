@@ -20,12 +20,14 @@ const NODE_CATEGORIES = {
     PS: 'PS',
     /** Legal Subject Node */
     LS: 'LS',
+    LSF: 'LSF',
     /** Foreign Physical Subject Node */
     PSF: 'PSF',
     /** Foreign Bank Node*/
     BANKF: 'BankF',
     /** Goverment Node*/
-    GOV: 'GOV'
+    GOV: 'GOV',
+    default: 'default'
 };
 
 /**
@@ -76,8 +78,10 @@ function getNodeCategory(nodeCategoryCode) {
             return NODE_CATEGORIES.PSF;
         case (nodeCategoryCode === 6):
             return NODE_CATEGORIES.LS;
+        case (nodeCategoryCode === 7):
+            return NODE_CATEGORIES.LSF;
         default:
-            return NODE_CATEGORIES.LS;
+            return NODE_CATEGORIES.default;
     }
 }
 
@@ -232,7 +236,7 @@ class Renderer {
                     meaning: obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION],
                     fromName: obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME],
                     toName: obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME],
-                    T0901: obj[DECOMPOSED_ATTRIBUTES.LINK.SHARE],
+                    T0901: obj[DECOMPOSED_ATTRIBUTES.LINK.SHARE] || false,
                     tooltip: linkToolTip,
                     color: obj[DECOMPOSED_ATTRIBUTES.LINK.COLOR]
                 });
@@ -440,7 +444,59 @@ class Renderer {
                 },
                 getExpanderButton()
             );
+        let foreignLegalSubjectNode =
+            _(go.Node, 'Vertical', {
+                fromSpot: go.Spot.AllSides, // coming out from middle-right
+                toSpot: go.Spot.AllSides,
+                isShadowed: false,
+                doubleClick: toggleNode,
+            }, new go.Binding('visible'),
+                _(go.Panel, 'Auto',
+                    _(go.Shape, 'Rectangle', { strokeWidth: 5, stroke: 'red' },
+                        new go.Binding('fill', 'color', (color) => {
+                            switch (color) {
+                                case 'lightgreen':
+                                    return GO_JS_COLORS.LIGHTGREEN;
+                                case 'green':
+                                    return GO_JS_COLORS.GREEN;
+                                case 'yellow':
+                                    return GO_JS_COLORS.YELLOW;
+                                case 'violet':
+                                    return GO_JS_COLORS.VIOLET;
+                                case 'ocean':
+                                    return GO_JS_COLORS.OCEAN;
+                                default:
+                                    return 'white';
+                            }
+                        }),
+                        /* new go.Binding('stroke', 'color', (color) => {
+                            switch (color) {
+                                case 'lightgreen':
+                                    return GO_JS_COLORS.LIGHTGREEN;
+                                case 'green':
+                                    return GO_JS_COLORS.GREEN;
+                                case 'yellow':
+                                    return GO_JS_COLORS.YELLOW;
+                                case 'violet':
+                                    return GO_JS_COLORS.VIOLET;
+                                default:
+                                    return 'pink';
+                            }
+                        }) */
+                    ),
+                    _(go.TextBlock, {
+                        margin: 15,
+                        font: 'bold 15px Montserrat, sans-serif', width: 200,
+                        wrap: go.TextBlock.WrapFit, textAlign: 'center'
 
+                    },
+                        new go.Binding('text', 'name'))
+                ),
+                {
+                    toolTip: getNodeToolTip()
+                },
+                getExpanderButton()
+            );
         let bankNode =
             _(go.Node, 'Spot', {
                 fromSpot: go.Spot.AllSides, // coming out from middle-right
@@ -498,9 +554,35 @@ class Renderer {
                     getExpanderButton()
                 ), {
                 toolTip: getNodeToolTip()
-            }
+            });
+        let defaultNode =
+            _(go.Node, 'Spot', {
+                fromSpot: go.Spot.AllSides, // coming out from middle-right
+                toSpot: go.Spot.AllSides,
+                doubleClick: toggleNode,
+            }, new go.Binding('visible'),
+                _(go.Panel, 'Vertical', { background: 'rgba(255,255,255,0.5)' },
+                    _(go.Picture, {
+                        desiredSize: new go.Size(100, 100)
+                    }, new go.Binding('source', 'color', (color) => {
+                        if (!color) {
+                            return addBeforeBase64 + this.nodeImageStringHelper('question', 'black', false);
+                        } else {
+                            return addBeforeBase64 + this.nodeImageStringHelper('question', color, false);
+                        }
+                    })),
 
-            );
+                    _(go.TextBlock, {
+                        margin: 8,
+                        isMultiline: true,
+                        textAlign: 'center',
+                        font: 'bold 15px Montserrat, sans-serif', width: 200,
+                        wrap: go.TextBlock.WrapFit
+                    }, new go.Binding('text', 'name')),
+                    getExpanderButton()
+                ), {
+                toolTip: getNodeToolTip()
+            });
         let foreignBankNode =
             _(go.Node, 'Spot', {
                 fromSpot: go.Spot.AllSides, // coming out from middle-right
@@ -604,7 +686,9 @@ class Renderer {
         templateMap.add('BankF', foreignBankNode);
         templateMap.add('PSF', foreignPhysicalSubjectNode);
         templateMap.add('LS', legalSubjectNode);
+        templateMap.add('LSF', foreignLegalSubjectNode);
         templateMap.add('GOV', govNode);
+        templateMap.add('default', defaultNode);
 
         return templateMap;
     }
@@ -883,10 +967,10 @@ class Renderer {
                             }
                             return false;
                         })),
-                    _(go.TextBlock, 'pr',  // the label text
+                    _(go.TextBlock,   // the label text
                         {
                             textAlign: 'center',
-                            margin: 5
+                            margin: 5,
                         },
                         // editing the text automatically updates the model data
                         new go.Binding('text', 'T0901', (t0901) => {
@@ -894,7 +978,7 @@ class Renderer {
                                 return '';
                             }
                             return `${t0901}%`;
-                        }))
+                        })),
                 ),
                 {
                     toolTip: getLinkAdorment()
@@ -1049,7 +1133,7 @@ class Renderer {
             return DEFAULT_RETURN;
         }
 
-        const entities = ['human', 'gov', 'bank'];
+        const entities = ['human', 'gov', 'bank', 'question'];
         const default_entity = entities[0]; // human 
         const colors = ['white', 'green', 'lightgreen', 'yellow', 'violet', 'ocean'];
         const default_color = colors[0]; // white

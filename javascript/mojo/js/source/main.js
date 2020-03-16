@@ -84,9 +84,13 @@ function main(me, options) {
 
     function getMstrData() {
         /*  Get the data from MSTR in JSON format  */
-        return me.dataInterface.getRawData(
-            mstrmojo.models.template.DataInterface.ENUM_RAW_DATA_FORMAT.ROWS_ADV,
-            { hasSelection: true, hasTitleName: true, hasThreshold: true });
+        try {
+            return me.dataInterface.getRawData(
+                mstrmojo.models.template.DataInterface.ENUM_RAW_DATA_FORMAT.ROWS_ADV,
+                { hasSelection: true, hasTitleName: true, hasThreshold: true });
+        } catch (e) {
+            return -1;
+        }
     }
 
     function isMstrObjectsEqual(a, b) {
@@ -113,31 +117,72 @@ function main(me, options) {
         }
         return true;
     }
+    function resolveError() {
+        Swal.fire(
+            {
+                icon: 'error',
+                title: 'Відсутній мінімальний набір параметрів',
+                text: 'Перетягніть у зони "Код першої/другої сутності" атрибути із ID та SHORTNAME для відповідної сутності '
+            });
+        window.visType = null;
+        window.facade = null;
+        return;
+    }
+    function checkForObligatoryParams(obj) {
+        function undef(a) {
+            return typeof a === 'undefined';
+        }
+        let obligatoryParams = [DECOMPOSED_ATTRIBUTES.NODE1.ID, DECOMPOSED_ATTRIBUTES.NODE2.ID, DECOMPOSED_ATTRIBUTES.NODE1.NAME, DECOMPOSED_ATTRIBUTES.NODE2.NAME];
+        for (let i = 0; i < obligatoryParams.length; i++) {
+            if (undef(obj[obligatoryParams[i]])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     try {
         // getting data from mstr
         let dataArr = getMstrData();
-
+        if (dataArr === -1) {
+            if (window.visType && window.visType.type !== 'canceled') {
+                window.visType = null;
+                return;
+            }
+            Swal.fire(
+                {
+                    title: 'Помилка при отриманні даних від Microstrategy',
+                    text: 'Переконайтеся що було перетягнуто хоча б 2 атрибути та 2 метрики'
+                });
+            return;
+        }
+        let parsedData = processData(me, dataArr);
+        if (!checkForObligatoryParams(parsedData[0])) {
+            resolveError();
+            return;
+        }
         if (typeof window.facade !== 'object') {
-            this.parsedData = processData(me, dataArr);
             window.facade = new Facade(parsedData, me.domNode.id, me);
-        } else {
-            this.parsedData = processData(me, dataArr);
+        } else if (window.facade && window.facade.updateData) {
             window.facade.updateData(parsedData);
+        } else {
+            window.visType = null;
+            return;
         }
         if (options && options.showAllData) {
             let myVisType = {
                 type: 'all'
             };
             window.visType = myVisType;
-            return showDiagram(myVisType);
+            showDiagram(myVisType);
+            return;
         }
         let keyNameArray = findUniqueEntitiesForAutocomplete(window.facade.rawData);
         let autocompleteHelp = [];
         keyNameArray.forEach((el) => {
             autocompleteHelp.push(`${el.key} ⁃ ${el.name}`);
         });
-
         if ((options && options.forcedReload) || !window.visType || window.visType.type === 'canceled') {
             scenario(autocompleteHelp, window.facade)
                 .then(visType => {
