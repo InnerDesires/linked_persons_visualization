@@ -34,7 +34,15 @@
                     this.addThresholdMenuItem();
                     entryPoint(this);
                 } catch (error) {
-                    alert(error);
+                    this.domNode.innerHTML = '';
+                    this.domNode.parentNode.style.userSelect = '';
+                    this.domNode.style.userSelect = 'all';
+                    let err = document.createElement('p');
+                    err.innerHTML = 'Помилка: ' + error;
+                    let stack = document.createElement('p');
+                    stack.innerHTML = error.stack;
+                    this.domNode.appendChild(err);
+                    this.domNode.appendChild(stack);
                 }
             }
         });

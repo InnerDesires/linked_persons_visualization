@@ -1,7 +1,32 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 function entryPoint(me) {
+    function prepareVisOptions() {
+        let is10Point2 = true;
+        if (typeof me.addThresholdMenuItem == 'function') {
+            is10Point2 = false;
+        }
 
+        if (!is10Point2) {
+            let obj = {};
+            CUSTOM_PROPS.forEach(el => {
+                obj[el.str] = el.default;
+            });
+            me.setDefaultPropertyValues(obj);
+        }
+        let result = {};
+        CUSTOM_PROPS.forEach((el) => {
+            result[el.str] = me.getProperty(el.str);
+        });
+        return result;
+    }
+    let CUSTOM_PROPS = [
+        {
+            str: 'maxPathesCount',
+            default: 12
+        }
+    ];
+    PROPS = prepareVisOptions();
     setStyles(me);
     addStartButton(me);
 
@@ -52,7 +77,7 @@ function entryPoint(me) {
 
 
     if (window.visType && window.visType.type !== 'canceled') {
-        main(me);
+        main(me, { type: 'autoload' });
     }
 }
 
@@ -125,7 +150,6 @@ function main(me, options) {
                 text: 'Перетягніть у зони "Код першої/другої сутності" атрибути із ID та SHORTNAME для відповідної сутності '
             });
         window.visType = null;
-        window.facade = null;
         return;
     }
     function checkForObligatoryParams(obj) {
@@ -140,6 +164,9 @@ function main(me, options) {
         }
         return true;
     }
+
+
+    alert(typeof PROPS['maxPathesCount']);
     // getting data from mstr
     let dataArr = getMstrData();
     if (dataArr === -1) {
@@ -160,8 +187,9 @@ function main(me, options) {
         return;
     }
     if (typeof window.facade !== 'object') {
-        window.facade = new Facade(parsedData, me.domNode.id, me);
+        window.facade = new Facade(parsedData, me.domNode.id, PROPS);
     } else if (window.facade && window.facade.updateData) {
+        window.facade.updateProps(PROPS);
         window.facade.updateData(parsedData);
     } else {
         window.visType = null;

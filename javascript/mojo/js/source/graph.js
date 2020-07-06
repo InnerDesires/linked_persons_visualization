@@ -102,13 +102,13 @@ class Graph {
             }
         }
 
-        function getNewNeighbours(node, am, v, idToUse, nodesToAvoid, pathesToAvoid) {
+        function getNewNeighbours(node, adjacencyMatrix, vocabulary, idToUse, nodesToAvoid, pathesToAvoid) {
             let result = []; // array with neighbours IDs
             idToUse.forEach(id => {
                 if (nodesToAvoid[id]) {
                     return;
                 }
-                if (am[v[node]][v[id]] && !doAvoid(pathesToAvoid, node, id)) {
+                if (adjacencyMatrix[vocabulary[node]][vocabulary[id]] && !doAvoid(pathesToAvoid, node, id)) {
                     result.push(id);
                 }
             });

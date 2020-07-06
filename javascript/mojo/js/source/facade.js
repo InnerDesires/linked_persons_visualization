@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 
 class Facade {
-    constructor(data, HTMLElementId) {
+    constructor(data, HTMLElementId, props) {
         this.HTMLElementId = HTMLElementId;
         this.rawData = data;
         this.data = this.removeDuplicateLinks(data);
@@ -11,14 +11,17 @@ class Facade {
         });
         this.Graph = new Graph(links);
         this.mainEntityId = '';
-
-
+        this.props = props;
     }
     updateData(data) {
         this.rawData = data;
         this.data = this.removeDuplicateLinks(data);
         let links = this.data.map(el => { return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] }; });
         this.Graph = new Graph(links);
+    }
+
+    updateProps(props) {
+        this.props = props;
     }
     showAll() {
 
@@ -71,7 +74,7 @@ class Facade {
 
     }
 
-    showFromTo(mainEntityId, secondEntityId, maxPathCount = 10,) {
+    showFromTo(mainEntityId, secondEntityId) {
         this.deleteDiagram();
         this.mainEntityId = mainEntityId;
         delete this.renderer;
@@ -90,7 +93,7 @@ class Facade {
             return (currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
         });
         // ? bfs - Breadth First Search. Graph searching algorithm 
-        let includedNodes = currentGraph.findAvailableVerticesFromToNew(mainEntityId, secondEntityId, maxPathCount);
+        let includedNodes = currentGraph.findAvailableVerticesFromToNew(mainEntityId, secondEntityId, this.props['maxPathesCount']);
         // if no avialable links were found/returned
         if (!includedNodes) {
             return Toast.fire({
