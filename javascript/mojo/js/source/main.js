@@ -166,7 +166,6 @@ function main(me, options) {
     }
 
 
-    alert(typeof PROPS['maxPathesCount']);
     // getting data from mstr
     let dataArr = getMstrData();
     if (dataArr === -1) {
