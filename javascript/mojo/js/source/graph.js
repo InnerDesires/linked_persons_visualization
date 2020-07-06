@@ -47,8 +47,7 @@ class Graph {
 
     findAvailableVertices(initialVertexId) {
         if (!initialVertexId || typeof initialVertexId !== 'string' || !this.uniqueIds.includes(initialVertexId)) {
-            alert('@findAvailableVertices: error - returning undefined');
-            return;
+            throw new Error('@findAvailableVertices: Wrong intialVertexId');
         }
 
         let visited = [];
@@ -73,8 +72,10 @@ class Graph {
 
     findAvailableVerticesFromToNew(initialVertexId, endingVertexId, maxPathCount = 5) {
         let cluster = this.findAvailableVertices(initialVertexId);
-        if (!(cluster.includes(initialVertexId) && cluster.includes(endingVertexId)))
+        if (!(cluster.includes(initialVertexId) && cluster.includes(endingVertexId))){
+            window.visType = null;
             throw new Error('Vertices dont belong to the same cluster');
+        }
 
         function backtrace(start, end, path) {
             let res = [end];
@@ -192,17 +193,17 @@ class Graph {
 
 function arr_diff(a1, a2) {
     var a = [], diff = [];
-    for (var i = 0; i < a1.length; i++) {
+    for (let i = 0; i < a1.length; i++) {
         a[a1[i]] = true;
     }
-    for (var i = 0; i < a2.length; i++) {
+    for (let i = 0; i < a2.length; i++) {
         if (a[a2[i]]) {
             delete a[a2[i]];
         } else {
             a[a2[i]] = true;
         }
     }
-    for (var k in a) {
+    for (let k in a) {
         diff.push(k);
     }
     return diff;

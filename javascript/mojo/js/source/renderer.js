@@ -65,20 +65,20 @@ const LINK_CATEGORIES = {
  * @return {NODE_CATEGORIES} Node Category
  */
 function getNodeCategory(nodeCategoryCode) {
-    switch (true) {
-        case (nodeCategoryCode === 1):
+    switch (nodeCategoryCode) {
+        case (1):
             return NODE_CATEGORIES.BANK;
-        case (nodeCategoryCode === 2):
+        case (2):
             return NODE_CATEGORIES.PS;
-        case (nodeCategoryCode === 3):
+        case (3):
             return NODE_CATEGORIES.BANKF;
-        case (nodeCategoryCode === 4):
+        case (4):
             return NODE_CATEGORIES.GOV;
-        case (nodeCategoryCode === 5):
+        case (5):
             return NODE_CATEGORIES.PSF;
-        case (nodeCategoryCode === 6):
+        case (6):
             return NODE_CATEGORIES.LS;
-        case (nodeCategoryCode === 7):
+        case (7):
             return NODE_CATEGORIES.LSF;
         default:
             return NODE_CATEGORIES.default;
@@ -96,7 +96,7 @@ function getNodeCategory(nodeCategoryCode) {
  * 
  * @returns {string} String to be putted inside the Node's tooltip 
  */
-function createNodeTooltip(obj, node) {
+function createNodeTooltip(obj, node, category) {
     if (!obj || typeof node !== 'string') {
         return;
     }
@@ -108,9 +108,10 @@ function createNodeTooltip(obj, node) {
                     Пояснення пов'язаності: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].RELATION_EXPLANATION] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].RELATION_EXPLANATION]}
                     Код категорії сутності: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY]}
                     Код кольору: ${typeof obj[DECOMPOSED_ATTRIBUTES[node].COLOR] === 'undefined' ? 'Поле відсутнє' : obj[DECOMPOSED_ATTRIBUTES[node].COLOR]}
+                    Категорія: ${category}
                     `;
     } catch (e) {
-        //alert(`@createNodeTooltip - ${e}`);
+
         return 'Помилка при створенні підказки';
     }
 }
@@ -180,141 +181,134 @@ class Renderer {
      * @param {Object} [prioritiesDict] Holds ids of the nodes as a properties names, there are values of node's priorities behind each key 
      */
     constructor(data, HTMLElementId, mainEntityId, nodesToShow, options = {}) {
-        try {
-            /**
-             * @property {diagram} diagram GoJS diagram object
-             */
-            this.diagram = _(go.Diagram, HTMLElementId, {
-                'undoManager.isEnabled': true,
-                initialContentAlignment: go.Spot.Center,
-                layout: _(go.ForceDirectedLayout, {
-                    maxIterations: 3000,
-                    defaultElectricalCharge: 600,
-                    isOngoing: true,
-                    setsPortSpots: false
-                })
+        /**
+         * @property {diagram} diagram GoJS diagram object
+         */
+        this.diagram = _(go.Diagram, HTMLElementId, {
+            'undoManager.isEnabled': true,
+            initialContentAlignment: go.Spot.Center,
+            layout: _(go.ForceDirectedLayout, {
+                maxIterations: 3000,
+                defaultElectricalCharge: 600,
+                isOngoing: true,
+                setsPortSpots: false
+            })
+        });
+
+
+        this.diagram.nodeTemplateMap = this.getNodeTemplateMap();
+        this.diagram.linkTemplateMap = this.getLinkTemplateMap();
+
+        let linkDataArray = [];
+        let nodeDataArray = [];
+
+        function createNodeObject(obj, node) {
+            if (!(node === 'NODE1' || node === 'NODE2')) {
+                window.visType = null;
+                throw new Error('@renderer.constructor.createNodeObject: Error, recieved wrong node string');
+            }
+            let anotherNode = (node === 'NODE1') ? 'NODE2' : 'NODE1';
+            let category = getNodeCategory(obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY]);
+            let tooltip = createNodeTooltip(obj, node, category);
+            return {
+                key: obj[DECOMPOSED_ATTRIBUTES[node].ID],
+                name: obj[DECOMPOSED_ATTRIBUTES[node].NAME],
+                another: obj[DECOMPOSED_ATTRIBUTES[anotherNode].NAME],
+                pairedNodeId: obj[DECOMPOSED_ATTRIBUTES[anotherNode].ID],
+                color: getNodeColor(obj[DECOMPOSED_ATTRIBUTES[node].COLOR]),
+                category: category,
+                isCollapsed: true,
+                visible: false,
+                showButton: false,
+                tooltip: tooltip
+            };
+        }
+
+        data.forEach((obj) => {
+            let linkCat = this.getLinkCategory(obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY]);
+            let linkToolTip = createLinkTooltipString(obj);
+
+            linkDataArray.push({
+                from: obj[DECOMPOSED_ATTRIBUTES.NODE2.ID],
+                to: obj[DECOMPOSED_ATTRIBUTES.NODE1.ID],
+                category: linkCat,
+                f069: obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY],
+                meaning: obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION],
+                fromName: obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME],
+                toName: obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME],
+                T0901: obj[DECOMPOSED_ATTRIBUTES.LINK.SHARE] || false,
+                tooltip: linkToolTip,
+                color: obj[DECOMPOSED_ATTRIBUTES.LINK.COLOR]
             });
 
 
-            this.diagram.nodeTemplateMap = this.getNodeTemplateMap();
-            this.diagram.linkTemplateMap = this.getLinkTemplateMap();
-
-            let linkDataArray = [];
-            let nodeDataArray = [];
-
-            function createNodeObject(obj, node) {
-                if (!(node === 'NODE1' || node === 'NODE2')) {
-                    throw new Error('@renderer.constructor.createNodeObject: Error, recieved wrong node string');
-                }
-                let anotherNode = (node === 'NODE1') ? 'NODE2' : 'NODE1';
-                let category = getNodeCategory(obj[DECOMPOSED_ATTRIBUTES[node].CATEGORY]);
-                let tooltip = createNodeTooltip(obj, 'NODE1');
-                return {
-                    key: obj[DECOMPOSED_ATTRIBUTES[node].ID],
-                    name: obj[DECOMPOSED_ATTRIBUTES[node].NAME],
-                    another: obj[DECOMPOSED_ATTRIBUTES[anotherNode].NAME],
-                    pairedNodeId: obj[DECOMPOSED_ATTRIBUTES[anotherNode].ID],
-                    color: getNodeColor(obj[DECOMPOSED_ATTRIBUTES[node].COLOR]),
-                    category: category,
-                    isCollapsed: true,
-                    visible: false,
-                    showButton: false,
-                    tooltip: tooltip
-                };
+            // looking if node has already been added to the node data array
+            let K0201Found = false;
+            let K0202Found = false;
+            let K0201Str = obj[DECOMPOSED_ATTRIBUTES.NODE1.ID];
+            let K0202Str = obj[DECOMPOSED_ATTRIBUTES.NODE2.ID];
+            for (let i = 0; i < nodeDataArray.length; i++) {
+                if (K0201Str === nodeDataArray[i]['key'])
+                    K0201Found = true;
+                if (K0202Str === nodeDataArray[i]['key'])
+                    K0202Found = true;
             }
 
-            data.forEach((obj) => {
-                let linkCat = this.getLinkCategory(obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY]);
-                let linkToolTip = createLinkTooltipString(obj);
-                /*                 alert(obj[DECOMPOSED_ATTRIBUTES.LINK.COLOR]);
-                 */                // adding  the array of links
-                linkDataArray.push({
-                    from: obj[DECOMPOSED_ATTRIBUTES.NODE2.ID],
-                    to: obj[DECOMPOSED_ATTRIBUTES.NODE1.ID],
-                    category: linkCat,
-                    f069: obj[DECOMPOSED_ATTRIBUTES.LINK.CATEGORY],
-                    meaning: obj[DECOMPOSED_ATTRIBUTES.LINK.TYPE_EXPLANATION],
-                    fromName: obj[DECOMPOSED_ATTRIBUTES.NODE1.NAME],
-                    toName: obj[DECOMPOSED_ATTRIBUTES.NODE2.NAME],
-                    T0901: obj[DECOMPOSED_ATTRIBUTES.LINK.SHARE] || false,
-                    tooltip: linkToolTip,
-                    color: obj[DECOMPOSED_ATTRIBUTES.LINK.COLOR]
-                });
+            // if node wasn't found in preceding links - adding it to the Node Data Array
+            if (!K0201Found) {
+                nodeDataArray.push(createNodeObject(obj, 'NODE1'));
+            }
+            if (!K0202Found) {
+                nodeDataArray.push(createNodeObject(obj, 'NODE2'));
+            }
+        });
 
 
-                // looking if node has already been added to the node data array
-                let K0201Found = false;
-                let K0202Found = false;
-                let K0201Str = obj[DECOMPOSED_ATTRIBUTES.NODE1.ID];
-                let K0202Str = obj[DECOMPOSED_ATTRIBUTES.NODE2.ID];
-                for (let i = 0; i < nodeDataArray.length; i++) {
-                    if (K0201Str === nodeDataArray[i]['key'])
-                        K0201Found = true;
-                    if (K0202Str === nodeDataArray[i]['key'])
-                        K0202Found = true;
-                }
+        this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+        if (options.mode === 'chain') {
+            this.diagram.startTransaction();
 
-                // if node wasn't found in preceding links - adding it to the Node Data Array
-                if (!K0201Found) {
-                    nodeDataArray.push(createNodeObject(obj, 'NODE1'));
+            nodesToShow.forEach(nodeID => {
+                let node = this.diagram.findNodeForKey(nodeID);
+                if (!node) {
+                    return;
                 }
-                if (!K0202Found) {
-                    nodeDataArray.push(createNodeObject(obj, 'NODE2'));
-                }
+                node.diagram.model.setDataProperty(node.data, 'visible', true);
             });
-
-
-            this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
-            if (options.mode === 'chain') {
-                this.diagram.startTransaction();
-
-                nodesToShow.forEach(nodeID => {
-                    let node = this.diagram.findNodeForKey(nodeID);
-                    if (!node) {
-                        return;
-                    }
-                    node.diagram.model.setDataProperty(node.data, 'visible', true);
-                });
-                this.diagram.commitTransaction('toggled visibility');
-
-                this.diagram.startTransaction();
-                nodesToShow.forEach(nodeID => {
-                    let node = this.diagram.findNodeForKey(nodeID);
-                    if (!node) {
-                        return;
-                    }
-                    let children = node.findNodesConnected();
-                    while (children.next()) {
-                        if (!children.value.data.visible) {
-                            node.diagram.model.setDataProperty(node.data, 'showButton', true);
-                            break;
-                        }
-                    }
-                });
-                this.diagram.commitTransaction('toggled showButton');
-                this.diagram.commandHandler.zoomToFit();
-                return this;
-            }
-
+            this.diagram.commitTransaction('toggled visibility');
 
             this.diagram.startTransaction();
-            let mainNode = this.diagram.findNodeForKey(mainEntityId);
-            if (!mainNode) {
-                throw new Error('@renderer.constructor: Error, mainNode wasn\'t found');
-            } else {
-                mainNode.diagram.model.setDataProperty(mainNode.data, 'visible', true);
-                mainNode.diagram.model.setDataProperty(mainNode.data, 'showButton', true);
-                this.expandFrom(mainNode);
-            }
-            this.diagram.commitTransaction('toggled visibility of dependencies');
+            nodesToShow.forEach(nodeID => {
+                let node = this.diagram.findNodeForKey(nodeID);
+                if (!node) {
+                    return;
+                }
+                let children = node.findNodesConnected();
+                while (children.next()) {
+                    if (!children.value.data.visible) {
+                        node.diagram.model.setDataProperty(node.data, 'showButton', true);
+                        break;
+                    }
+                }
+            });
+            this.diagram.commitTransaction('toggled showButton');
             this.diagram.commandHandler.zoomToFit();
-        } catch (e) {
-            let Paragraph = document.createElement('p');
-            Paragraph.innerHTML = e.stack;
-            let el = document.getElementById(HTMLElementId);
-            if (el) el.appendChild(Paragraph);
-            alert(`@renderer.js ${e.stack}`);
+            return this;
         }
+
+
+        this.diagram.startTransaction();
+        let mainNode = this.diagram.findNodeForKey(mainEntityId);
+        if (!mainNode) {
+            window.visType = null;
+            throw new Error('@renderer.constructor: Error, mainNode wasn\'t found');
+        } else {
+            mainNode.diagram.model.setDataProperty(mainNode.data, 'visible', true);
+            mainNode.diagram.model.setDataProperty(mainNode.data, 'showButton', true);
+            this.expandFrom(mainNode);
+        }
+        this.diagram.commitTransaction('toggled visibility of dependencies');
+        this.diagram.commandHandler.zoomToFit();
     }
     /**
      * Deletes a GoJS diagram
@@ -469,20 +463,6 @@ class Renderer {
                                     return 'white';
                             }
                         }),
-                        /* new go.Binding('stroke', 'color', (color) => {
-                            switch (color) {
-                                case 'lightgreen':
-                                    return GO_JS_COLORS.LIGHTGREEN;
-                                case 'green':
-                                    return GO_JS_COLORS.GREEN;
-                                case 'yellow':
-                                    return GO_JS_COLORS.YELLOW;
-                                case 'violet':
-                                    return GO_JS_COLORS.VIOLET;
-                                default:
-                                    return 'pink';
-                            }
-                        }) */
                     ),
                     _(go.TextBlock, {
                         margin: 15,
@@ -505,7 +485,7 @@ class Renderer {
             }, new go.Binding('visible'),
                 _(go.Panel, 'Vertical', { background: 'rgba(255,255,255,0.5)' },
                     _(go.Picture, {
-                        source: 'lnkd_prsn_vis_icons/bank_violet.png',
+
                         desiredSize: new go.Size(100, 100)
                     }, new go.Binding('source', 'color', (color) => {
                         if (!color) {
@@ -1134,9 +1114,9 @@ class Renderer {
         }
 
         const entities = ['human', 'gov', 'bank', 'question'];
-        const default_entity = entities[0]; // human 
+        const default_entity = entities[3]; // human 
         const colors = ['white', 'green', 'lightgreen', 'yellow', 'violet', 'ocean'];
-        const default_color = colors[0]; // white
+        const default_color = colors[1]; // white
 
         let _entityType;
         if (entities.includes(entityType)) {
@@ -1155,12 +1135,10 @@ class Renderer {
 
         let properyName = _entityType + '_' + _color + (isForeign ? '_f' : '');
         if (!VIS_IMAGES_BASE64[properyName]) {
-            console.error(`[${this.name}] Coresponding image string hasn't been found for property ${properyName}, using default style`);
-            return DEFAULT_RETURN;
+            throw new Error(`[${this.name}] Coresponding image string hasn't been found for property ${properyName}, using default style`);
         }
         if (!VIS_IMAGES_BASE64[properyName].str) {
-            console.error(`[${this.name}] "Str" property hasn't been found for ${properyName}, using default style`);
-            return DEFAULT_RETURN;
+            throw new Error(`[${this.name}] "Str" property hasn't been found for ${properyName}, using default style`);
         }
         return VIS_IMAGES_BASE64[properyName].str;
     }

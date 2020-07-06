@@ -240,7 +240,7 @@ function processData(me, data) {
         });
 
         if (zones.length !== DROP_ZONES.names.length) {
-            return alert('Error, zones count incorrect');
+            throw new Error('Error, zones count incorrect');
         }
 
         for (let i = 0; i < DROP_ZONES.names.length; i++) {

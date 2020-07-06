@@ -140,64 +140,56 @@ function main(me, options) {
         }
         return true;
     }
-
-
-    try {
-        // getting data from mstr
-        let dataArr = getMstrData();
-        if (dataArr === -1) {
-            if (window.visType && window.visType.type !== 'canceled') {
-                window.visType = null;
-                return;
-            }
-            Swal.fire(
-                {
-                    title: 'Помилка при отриманні даних від Microstrategy',
-                    text: 'Переконайтеся що було перетягнуто хоча б 2 атрибути та 2 метрики'
-                });
-            return;
-        }
-        let parsedData = processData(me, dataArr);
-        if (!checkForObligatoryParams(parsedData[0])) {
-            resolveError();
-            return;
-        }
-        if (typeof window.facade !== 'object') {
-            window.facade = new Facade(parsedData, me.domNode.id, me);
-        } else if (window.facade && window.facade.updateData) {
-            window.facade.updateData(parsedData);
-        } else {
+    // getting data from mstr
+    let dataArr = getMstrData();
+    if (dataArr === -1) {
+        if (window.visType && window.visType.type !== 'canceled') {
             window.visType = null;
             return;
         }
-        if (options && options.showAllData) {
-            let myVisType = {
-                type: 'all'
-            };
-            window.visType = myVisType;
-            showDiagram(myVisType);
-            return;
-        }
-        let keyNameArray = findUniqueEntitiesForAutocomplete(window.facade.rawData);
-        let autocompleteHelp = [];
-        keyNameArray.forEach((el) => {
-            autocompleteHelp.push(`${el.key} ⁃ ${el.name}`);
-        });
-        if ((options && options.forcedReload) || !window.visType || window.visType.type === 'canceled') {
-            scenario(autocompleteHelp, window.facade)
-                .then(visType => {
-                    if (!(window.visType && window.visType.type !== 'canceled' && visType.type === 'canceled')) {
-                        window.visType = visType;
-                    }
-                    showDiagram(visType);
-                });
-        } else {
-            showDiagram(window.visType);
-        }
-
-
-    } catch (err) {
-        alert(`@main.js: ${err}`);
+        Swal.fire(
+            {
+                title: 'Помилка при отриманні даних від Microstrategy',
+                text: 'Переконайтеся що було перетягнуто хоча б 2 атрибути та 2 метрики'
+            });
+        return;
+    }
+    let parsedData = processData(me, dataArr);
+    if (!checkForObligatoryParams(parsedData[0])) {
+        resolveError();
+        return;
+    }
+    if (typeof window.facade !== 'object') {
+        window.facade = new Facade(parsedData, me.domNode.id, me);
+    } else if (window.facade && window.facade.updateData) {
+        window.facade.updateData(parsedData);
+    } else {
+        window.visType = null;
+        return;
+    }
+    if (options && options.showAllData) {
+        let myVisType = {
+            type: 'all'
+        };
+        window.visType = myVisType;
+        showDiagram(myVisType);
+        return;
+    }
+    let keyNameArray = findUniqueEntitiesForAutocomplete(window.facade.rawData);
+    let autocompleteHelp = [];
+    keyNameArray.forEach((el) => {
+        autocompleteHelp.push(`${el.key} ⁃ ${el.name}`);
+    });
+    if ((options && options.forcedReload) || !window.visType || window.visType.type === 'canceled') {
+        scenario(autocompleteHelp, window.facade)
+            .then(visType => {
+                if (!(window.visType && window.visType.type !== 'canceled' && visType.type === 'canceled')) {
+                    window.visType = visType;
+                }
+                showDiagram(visType);
+            });
+    } else {
+        showDiagram(window.visType);
     }
 }
 

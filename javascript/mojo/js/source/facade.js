@@ -3,18 +3,15 @@
 
 class Facade {
     constructor(data, HTMLElementId) {
-        try {
-            this.HTMLElementId = HTMLElementId;
-            this.rawData = data;
-            this.data = this.removeDuplicateLinks(data);
-            let links = this.data.map(el => {
-                return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] };
-            });
-            this.Graph = new Graph(links);
-            this.mainEntityId = '';
-        } catch (error) {
-            alert(`@facade constructor: ${error}`);
-        }
+        this.HTMLElementId = HTMLElementId;
+        this.rawData = data;
+        this.data = this.removeDuplicateLinks(data);
+        let links = this.data.map(el => {
+            return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] };
+        });
+        this.Graph = new Graph(links);
+        this.mainEntityId = '';
+
 
     }
     updateData(data) {
@@ -44,37 +41,34 @@ class Facade {
     }
 
     showFrom(mainEntityId) {
-        try {
-
-            if (typeof mainEntityId !== 'string') return;
-            this.deleteDiagram();
-            delete this.renderer;
-
-            this.mainEntityId = mainEntityId;
-            const currentCluster = this.Graph.findAvailableVertices(mainEntityId);
-            if (!currentCluster) {
-                throw new Error('findAvailableVertices() returned no data');
-            }
-            this.currentData = this.data.filter(row => {
-                return (currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
-            });
-
-            let currentGraph = new Graph(this.currentData.map(el => { return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] }; }));
-            let nodesToShow = currentGraph.findOneEdgeChildren(mainEntityId);
-
-            nodesToShow.push(mainEntityId);
-            let nodesToShowDict = {};
-            nodesToShow.forEach(element => {
-                nodesToShowDict[element] = true;
-            });
 
 
-            this.renderer = new Renderer(this.currentData, this.HTMLElementId, mainEntityId, nodesToShowDict);
+        if (typeof mainEntityId !== 'string') return;
+        this.deleteDiagram();
+        delete this.renderer;
 
-
-        } catch (error) {
-            alert(`@showFrom: ${error}`);
+        this.mainEntityId = mainEntityId;
+        const currentCluster = this.Graph.findAvailableVertices(mainEntityId);
+        if (!currentCluster) {
+            window.visType = null;
+            throw new Error('findAvailableVertices() returned no data');
         }
+        this.currentData = this.data.filter(row => {
+            return (currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
+        });
+
+        let currentGraph = new Graph(this.currentData.map(el => { return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] }; }));
+        let nodesToShow = currentGraph.findOneEdgeChildren(mainEntityId);
+
+        nodesToShow.push(mainEntityId);
+        let nodesToShowDict = {};
+        nodesToShow.forEach(element => {
+            nodesToShowDict[element] = true;
+        });
+
+
+        this.renderer = new Renderer(this.currentData, this.HTMLElementId, mainEntityId, nodesToShowDict);
+
     }
 
     showFromTo(mainEntityId, secondEntityId, maxPathCount = 10,) {
@@ -83,10 +77,11 @@ class Facade {
         delete this.renderer;
         const currentClusterVertices = this.Graph.findAvailableVertices(mainEntityId);
         if (!currentClusterVertices) {
+            window.visType = null;
             throw new Error('findAvailableVertices() returned no data');
         }
 
-        
+
         this.currentData = this.data.filter(row => {
             return (currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentClusterVertices.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
         });
@@ -174,6 +169,7 @@ class Facade {
         }
         const currentCluster = this.Graph.findAvailableVertices(fistId);
         if (!currentCluster) {
+            window.visType = null;
             throw new Error('findAvailableVertices() returned no data');
         }
         let newData = this.data.filter(row => {
@@ -186,7 +182,7 @@ class Facade {
     }
 
     focusOnMainEntity() {
-        if (this.renderer){
+        if (this.renderer) {
             this.renderer.focusOnNode(this.mainEntityId);
         }
     }
