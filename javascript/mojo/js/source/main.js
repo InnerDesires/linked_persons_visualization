@@ -176,7 +176,7 @@ function main(me, options) {
         Swal.fire(
             {
                 title: 'Помилка при отриманні даних від Microstrategy',
-                text: 'Переконайтеся що було перетягнуто хоча б 2 атрибути та 2 метрики'
+                text: 'Переконайтеся, що було перетягнуто ідентифікатори сутностей та, хоча б, 1 метрику'
             });
         return;
     }
@@ -267,7 +267,6 @@ function addStartButton(me) {
         window.button.addEventListener('click', () => {
             main(me);
         });
-
     }
 
     me.domNode.appendChild(window.button);

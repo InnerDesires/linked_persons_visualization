@@ -186,6 +186,8 @@ class Renderer {
          */
         this.diagram = _(go.Diagram, HTMLElementId, {
             'undoManager.isEnabled': true,
+            'toolManager.hoverDelay': 200,
+            'toolManager.toolTipDuration': 60000,
             initialContentAlignment: go.Spot.Center,
             layout: _(go.ForceDirectedLayout, {
                 maxIterations: 3000,
@@ -1115,7 +1117,7 @@ class Renderer {
         const entities = ['human', 'gov', 'bank', 'question'];
         const default_entity = entities[3]; // human 
         const colors = ['white', 'green', 'lightgreen', 'yellow', 'violet', 'ocean', 'black'];
-        const default_color = colors[2]; 
+        const default_color = colors[2];
 
         let _entityType;
         if (entities.includes(entityType)) {
