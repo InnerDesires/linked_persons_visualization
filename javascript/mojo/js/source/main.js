@@ -50,10 +50,22 @@ function entryPoint(me) {
                     cancelButtonText: 'Відміна'
                 }).then((result) => {
                     if (result.value) {
-                        main(me, {
-                            forcedReload: true,
-                            showAllData: true
-                        });
+                        try {
+                            main(me, {
+                                forcedReload: true,
+                                showAllData: true
+                            });
+                        } catch (error) {
+                            me.domNode.innerHTML = '';
+                            me.domNode.parentNode.style.userSelect = '';
+                            me.domNode.style.userSelect = 'all';
+                            let err = document.createElement('p');
+                            err.innerHTML = 'Помилка: ' + error;
+                            let stack = document.createElement('p');
+                            stack.innerHTML = error.stack;
+                            me.domNode.appendChild(err);
+                            me.domNode.appendChild(stack);
+                        }
                     }
                 });
 

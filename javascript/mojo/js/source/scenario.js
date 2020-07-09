@@ -6,21 +6,30 @@ async function scenario(autocompleteHelp, facade) {
         return await Swal.fire({
             title: title,
             icon: 'question',
-            html: `<input type="text" id="${CUSTOM_INPUT_ID}" class="swal2-input">`,
+            input: 'text',
             confirmButtonText: 'Продовжити',
             showCancelButton: true,
             cancelButtonText: 'Відмінити та почати спочатку',
-
+            inputValidator: (value) => {
+                return new Promise((resolve) => {
+                    let res = (autocompleteHelp.includes(value));
+                    if (res) {
+                        resolve();
+                    } else {
+                        resolve('Оберіть елемент з випадаючого списку');
+                    }
+                });
+            },
             onOpen: () => {
-                autocomplete(document.getElementById(CUSTOM_INPUT_ID), searchHelp);
+                autocomplete(document.getElementsByClassName('swal2-input')[0], searchHelp);
             },
             onClose: () => {
-                let customInput = document.getElementById(CUSTOM_INPUT_ID);
-
+                let customInput = document.getElementsByClassName('swal2-input')[0];
                 scenario[propertyToChange] = customInput ? customInput.value : '';
             },
         });
     }
+
     const CUSTOM_INPUT_ID = 'eoijgp[q34jihv89yu59hjegpuuh';
     let scenario = {
         typeOneSelected: false,

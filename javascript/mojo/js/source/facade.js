@@ -24,10 +24,9 @@ class Facade {
         this.props = props;
     }
     showAll() {
-
         this.deleteDiagram();
         delete this.renderer;
-        this.renderer = new Renderer(this.data, this.HTMLElementId);
+        this.renderer = new Renderer(this.data, this.HTMLElementId, null, null, { mode: 'all' });
     }
 
     showAllNodesFrom(mainEntityId) {
@@ -166,11 +165,11 @@ class Facade {
         return toReturn;
     }
 
-    getNewAutcompleteList(fistId) {
-        if (!fistId || typeof fistId !== 'string') {
+    getNewAutcompleteList(firstId) {
+        if (!firstId || typeof firstId !== 'string') {
             retrun;
         }
-        const currentCluster = this.Graph.findAvailableVertices(fistId);
+        const currentCluster = this.Graph.findAvailableVertices(firstId);
         if (!currentCluster) {
             window.visType = null;
             throw new Error('findAvailableVertices() returned no data');
@@ -179,6 +178,20 @@ class Facade {
             return (currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
         });
         let keyNameArray = findUniqueEntitiesForAutocomplete(newData);
+        // removing firstId Element from the resulting list
+        let firstIdElementIndex = -1;
+        for (let i = 0; i < keyNameArray.length; i++) {
+            const element = keyNameArray[i];
+            if (element.key === firstId) {
+                firstIdElementIndex = i;
+                break;
+            }
+        }
+
+        if (firstIdElementIndex !== -1) {
+            keyNameArray.splice(firstIdElementIndex);
+        }
+
         return keyNameArray.map((el) => {
             return `${el.key} ⁃ ${el.name}`;
         });

@@ -27,7 +27,10 @@ function autocomplete(inp, arr) {
 
                 b.innerHTML += arr[i];
                 /*insert a input field that will hold the current array item's value:*/
-                b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                let hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.value = arr[i];
+                b.appendChild(hiddenInput);
                 /*execute a function when someone clicks on the item value (DIV element):*/
                 b.addEventListener("click", function(e) {
                     /*insert the value for the autocomplete text field:*/

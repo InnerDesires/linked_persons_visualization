@@ -266,8 +266,9 @@ class Renderer {
         });
 
 
-        this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+
         if (options.mode === 'chain') {
+            this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
             this.diagram.startTransaction();
 
             nodesToShow.forEach(nodeID => {
@@ -297,8 +298,16 @@ class Renderer {
             this.diagram.commandHandler.zoomToFit();
             return this;
         }
+        if (options.mode === 'all') {
+            for (let i = 0; i < nodeDataArray.length; i++) {
+                nodeDataArray[i].visible = true;
+            }
+            this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+            this.diagram.commandHandler.zoomToFit();
+            return this;
+        }
 
-
+        this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
         this.diagram.startTransaction();
         let mainNode = this.diagram.findNodeForKey(mainEntityId);
         if (!mainNode) {
