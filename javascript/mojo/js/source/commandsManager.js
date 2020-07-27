@@ -1,55 +1,106 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 
-function addUtilsMenu(domNode, buttons) {
-    removeElement('customUtils');
-    removeElement('hider');
-    let newDiv = document.createElement('div');
-    newDiv.id = 'customUtils';
-    /* {
-                    className: 'customUtilsButton',
-                    innerHTML: 'Зберегти вигляд для експорту',
-                    onClick: () => {
-                        alert('raising event');
-                        me.raiseEvent({
-                            name: 'renderFinished',
-                            id: me.k
-                        });
-                    }
-                } */
+
+class commandsManager {
+    constructor(domNode, buttons) {
+        removeElement('customUtils');
+        removeElement('hider');
+        this.root = domNode;
+        addHider(domNode);
+        removeElement('customUtils');
+        this.customUtils = document.createElement('div');
+        this.customUtils.id = 'customUtils';
+        this.buttonsContainer = document.createElement('div');
+        buttons.forEach(el => {
+            let sign = document.createElement('p');
+            sign.className = el.className || 'commandSign';
+            sign.innerText = el.innerHTML;
+            sign.style = `
+                border: none;
+                padding: 17px;
+                margin: 0;
+                font-size: 1.5em;
+            `;
+            sign.addEventListener('click', el.onClick);
+            this.buttonsContainer.appendChild(sign);
+        });
+
+        this.expander = document.createElement('div');
+        this.expander.id = 'expander';
+        this.customUtils.appendChild(this.buttonsContainer);
+        this.customUtils.appendChild(this.expander);
+        this.root.parentElement.appendChild(this.customUtils);
+        this.setStyles();
+        let offset = document.getElementById('expander').getBoundingClientRect().left - document.getElementById('customUtils').getBoundingClientRect().left - 3;
+        this.customUtils.style.left = `${-offset}px`;
+        let css = `
+        #customUtils:hover { 
+            margin-left: ${offset}px;
+            }
+        #customUtils.hover { 
+            margin-left: ${offset}px;
+            }`;
+        var style = document.createElement('style');
+        if (style.styleSheet) {
+            style.styleSheet.cssText = css;
+        } else {
+            style.appendChild(document.createTextNode(css));
+        }
+        document.getElementsByTagName('head')[0].appendChild(style);
+        this.customUtils.classList.add('hover');
+        setTimeout(() => {
+            this.customUtils.classList.remove('hover');
+        }, 500);
+    }
+
+    setStyles() {
+        this.buttonsContainer.style = `
+            padding-top: 20px;
+            display: flex; 
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 2px 0px 5px 0px rgba(100,100,100,0.6);
+            background: white`;
+
+        this.customUtils.style = `
+            align-items: center;
+            position: absolute;
+            top: 10px;
+            display: flex;
+            flex-direction: row;
+            height: ${this.root.style.height};
+            z-index: 15000;
+            transition: 0.9s;`;
 
 
-    buttons.forEach(el => {
-        let button = document.createElement('button');
-        button.className = el.className || 'customUtilsButton';
-        button.innerHTML = el.innerHTML;
-        button.addEventListener('click', el.onClick);
-        newDiv.appendChild(button);
-    });
+        this.expander.innerHTML = '<span>&nbsp;&nbsp;</span>';
+        this.expander.style = `
+            background-color: rgb(230,230,230);
+            color: black;
+            height: 50px;
+            border: 1px solid rgb(212, 212, 212);
+            border-radius: 0px 50% 50% 0px;`;
+    }
 
-    newDiv.style =
-        `
-        position: absolute;
-        top: 10px;
-        display: flex;
-        flex-direction: row;
-        box-sizing: content-box;
-        z-index: 999;
-        transition: 0.9s;
-        `;
+    getButton(index) {
+        let button = this.buttonsContainer.getElementsByClassName('commandSign')[index];
+        return {
+            activate: function () {
+                if (button && button.classList) {
+                    button.classList.remove('inactive');
+                }
+            },
+            deactivate: function () {
+                if (button && button.classList) {
+                    button.classList.add('inactive');
+                }
+            }
+        };
+    }
+}
 
-    let expander = document.createElement('div');
-    expander.innerHTML = '<span>&nbsp;&nbsp;</span>';
-    expander.style = `
-        background-color: rgb(230,230,230);
-        color: black;
-        border: 1px solid rgb(212, 212, 212);
-        border-radius: 0px 50% 50% 0px;
-    `;
-    expander.id = 'expander';
-    newDiv.appendChild(expander);
-
-
+function addHider(domNode) {
     let hider = document.createElement('div');
     let hiderButton = document.createElement('button');
     hider.id = 'hider';
@@ -77,34 +128,7 @@ function addUtilsMenu(domNode, buttons) {
         
     `;
     hider.appendChild(hiderButton);
-    //domNode.parentElement.appendChild(hider);
-    domNode.parentElement.appendChild(newDiv);
     domNode.parentElement.appendChild(hider);
-
-    let offset = document.getElementById('expander').getBoundingClientRect().left - document.getElementById('customUtils').getBoundingClientRect().left - 3;
-    newDiv.style.left = `${-offset}px`;
-
-    let css = `
-    #customUtils:hover { 
-        margin-left: ${offset}px;
-        }
-    #customUtils.hover { 
-        margin-left: ${offset}px;
-        }
-       
-    `;
-    var style = document.createElement('style');
-    if (style.styleSheet) {
-        style.styleSheet.cssText = css;
-    } else {
-        style.appendChild(document.createTextNode(css));
-    }
-    document.getElementsByTagName('head')[0].appendChild(style);
-    let customUtils = document.getElementById('customUtils');
-    customUtils.classList.add('hover');
-    setTimeout(() => {
-        customUtils.classList.remove('hover');
-    }, 500);
 }
 
 function removeElement(elementId) {

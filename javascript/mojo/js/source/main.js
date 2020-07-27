@@ -85,8 +85,9 @@ function entryPoint(me) {
                 }
             }
         }];
-    addUtilsMenu(me.domNode, buttons);
-
+    me.commandsManager = new commandsManager(me.domNode, buttons);
+    me.commandsManager.getButton(2).deactivate();
+    me.commandsManager.getButton(3).deactivate();
 
     if (window.visType && window.visType.type !== 'canceled') {
         main(me, { type: 'autoload' });
@@ -100,17 +101,21 @@ function main(me, options) {
         let startButton;
         switch (visType.type) {
             case 'singleEntity':
-                //window.facade.showAllNodesFrom(visType.mainEntityId);
-                //window.facade.showAllNodesFrom(visType.mainEntityId);
                 window.facade.showFrom(visType.mainEntityId);
+                me.commandsManager.getButton(2).activate();
+                me.commandsManager.getButton(3).activate();
                 break;
             case 'chain':
                 maxPathCount = 10;
                 searchType = 'bfs';
                 window.facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
+                me.commandsManager.getButton(2).activate();
+                me.commandsManager.getButton(3).activate();
                 break;
             case 'all':
                 window.facade.showAll();
+                me.commandsManager.getButton(2).activate();
+                me.commandsManager.getButton(3).activate();
                 break;
             case 'canceled':
                 startButton = document.getElementById('customStartButton');
