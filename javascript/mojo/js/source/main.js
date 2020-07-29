@@ -32,7 +32,7 @@ function entryPoint(me) {
 
     let buttons = [
         {
-            innerHTML: 'Інша діаграма',
+            innerHTML: 'Нова діаграма',
             onClick: () => {
                 main(me, { forcedReload: true });
             }
@@ -88,6 +88,22 @@ function entryPoint(me) {
     me.commandsManager = new commandsManager(me.domNode, buttons);
     me.commandsManager.getButton(2).deactivate();
     me.commandsManager.getButton(3).deactivate();
+    let dataLength;
+    try {
+        dataLength = me.dataInterface.getRawData(
+            mstrmojo.models.template.DataInterface.ENUM_RAW_DATA_FORMAT.ROWS_ADV,
+            { hasSelection: true, hasTitleName: true, hasThreshold: true }).length;
+    } catch (e) {
+        dataLength = 0;
+    }
+    me.commandsManager.updateDiagramInfo(
+        [
+            {
+                name: 'Зв\'язки',
+                value: numberWithCommas(dataLength)
+            }
+        ]
+    );
 
     if (window.visType && window.visType.type !== 'canceled') {
         main(me, { type: 'autoload' });
@@ -99,25 +115,21 @@ function main(me, options) {
         let maxPathCount;
         let searchType;
         let startButton;
+        toggleButtons(true);
         switch (visType.type) {
             case 'singleEntity':
                 window.facade.showFrom(visType.mainEntityId);
-                me.commandsManager.getButton(2).activate();
-                me.commandsManager.getButton(3).activate();
                 break;
             case 'chain':
                 maxPathCount = 10;
                 searchType = 'bfs';
                 window.facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
-                me.commandsManager.getButton(2).activate();
-                me.commandsManager.getButton(3).activate();
                 break;
             case 'all':
                 window.facade.showAll();
-                me.commandsManager.getButton(2).activate();
-                me.commandsManager.getButton(3).activate();
                 break;
             case 'canceled':
+                toggleButtons(false);
                 startButton = document.getElementById('customStartButton');
                 startButton.style.display = 'block';
                 return;
@@ -182,9 +194,19 @@ function main(me, options) {
         return true;
     }
 
+    function toggleButtons(state) {
+        if (state) {
+            me.commandsManager.getButton(2).activate();
+            me.commandsManager.getButton(3).activate();
+        } else {
+            me.commandsManager.getButton(2).deactivate();
+            me.commandsManager.getButton(3).deactivate();
+        }
+    }
 
     // getting data from mstr
     let dataArr = getMstrData();
+
     if (dataArr === -1) {
         if (window.visType && window.visType.type !== 'canceled') {
             window.visType = null;
@@ -198,12 +220,13 @@ function main(me, options) {
         return;
     }
     let parsedData = processData(me, dataArr);
+
     if (!checkForObligatoryParams(parsedData[0])) {
         resolveError();
         return;
     }
     if (typeof window.facade !== 'object') {
-        window.facade = new Facade(parsedData, me.domNode.id, PROPS);
+        window.facade = new Facade(parsedData, me.domNode.id, PROPS, me);
     } else if (window.facade && window.facade.updateData) {
         window.facade.updateProps(PROPS);
         window.facade.updateData(parsedData);

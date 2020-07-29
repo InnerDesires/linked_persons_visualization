@@ -28,10 +28,13 @@ class commandsManager {
 
         this.expander = document.createElement('div');
         this.expander.id = 'expander';
+
         this.customUtils.appendChild(this.buttonsContainer);
         this.customUtils.appendChild(this.expander);
         this.root.parentElement.appendChild(this.customUtils);
+
         this.setStyles();
+
         let offset = document.getElementById('expander').getBoundingClientRect().left - document.getElementById('customUtils').getBoundingClientRect().left - 3;
         this.customUtils.style.left = `${-offset}px`;
         let css = `
@@ -47,21 +50,29 @@ class commandsManager {
         } else {
             style.appendChild(document.createTextNode(css));
         }
+
         document.getElementsByTagName('head')[0].appendChild(style);
         this.customUtils.classList.add('hover');
         setTimeout(() => {
             this.customUtils.classList.remove('hover');
         }, 500);
+
+
+        this.diagramInfo = document.createElement('div');
+        this.diagramInfo.id = 'diagramInfo';
+        this.buttonsContainer.prepend(this.diagramInfo);
+
     }
 
     setStyles() {
         this.buttonsContainer.style = `
+            width: 100%;
             padding-top: 20px;
             display: flex; 
             flex-direction: column;
             height: 100%;
             box-shadow: 2px 0px 5px 0px rgba(100,100,100,0.6);
-            background: white`;
+            background: white;`;
 
         this.customUtils.style = `
             align-items: center;
@@ -74,13 +85,19 @@ class commandsManager {
             transition: 0.9s;`;
 
 
-        this.expander.innerHTML = '<span>&nbsp;&nbsp;</span>';
+        this.expander.innerHTML = '<span>&nbsp;>&nbsp;</span>';
         this.expander.style = `
-            background-color: rgb(230,230,230);
-            color: black;
-            height: 50px;
-            border: 1px solid rgb(212, 212, 212);
-            border-radius: 0px 50% 50% 0px;`;
+            background-color: rgb(255,255,255);
+            color: rgb(150,150,150);
+            padding: 10px 2px;
+            transform: translateX(-1px);
+            box-shadow: 4px 0px 5px -2px rgba(100,100,100,0.6);
+            border-radius: 0px 50% 50% 0px;
+            display: flex;
+            align-items: center;
+            line-height: 1em;
+            position: relative;`;
+
     }
 
     getButton(index) {
@@ -98,8 +115,31 @@ class commandsManager {
             }
         };
     }
-}
 
+    updateDiagramInfo(entriesArray) {
+        if (!entriesArray) {
+            return;
+        }
+
+        this.diagramInfo.innerHTML = '';
+        entriesArray.forEach(entry => {
+            let newEl = document.createElement('div');
+            newEl.classList.add('infoElement');
+            let newValue = document.createElement('p');
+            let newName = document.createElement('p');
+            newValue.classList.add('diagramInfoVal');
+            newName.classList.add('diagramInfoName');
+            newValue.innerText = entry.value || 'Не вказано';
+            newName.innerText = entry.name || 'Не вказано';
+            newEl.appendChild(newValue);
+            newEl.appendChild(newName);
+            this.diagramInfo.appendChild(newEl);
+        });
+    }
+}
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+}
 function addHider(domNode) {
     let hider = document.createElement('div');
     let hiderButton = document.createElement('button');

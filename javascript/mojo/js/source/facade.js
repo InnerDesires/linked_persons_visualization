@@ -2,7 +2,8 @@
 /* eslint-disable no-unused-vars */
 
 class Facade {
-    constructor(data, HTMLElementId, props) {
+    constructor(data, HTMLElementId, props, me) {
+        this.me = me;
         this.HTMLElementId = HTMLElementId;
         this.rawData = data;
         this.data = this.removeDuplicateLinks(data);
@@ -12,14 +13,50 @@ class Facade {
         this.Graph = new Graph(links);
         this.mainEntityId = '';
         this.props = props;
+        if (this.me && this.me.commandsManager) {
+            this.me.commandsManager.updateDiagramInfo(
+                [
+                    {
+                        name: 'Зв\'язки',
+                        value: numberWithCommas(this.rawData.length)
+                    },
+                    {
+                        name: 'Унікальні зв\'язки',
+                        value: numberWithCommas(this.data.length)
+                    },
+                    {
+                        name: 'Особи',
+                        value: numberWithCommas(this.Graph.uniqueIds.length)
+                    }
+                ]
+            );
+        }
     }
     updateData(data) {
         this.rawData = data;
         this.data = this.removeDuplicateLinks(data);
         let links = this.data.map(el => { return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] }; });
         this.Graph = new Graph(links);
+        if (this.me && this.me.commandsManager) {
+            this.me.commandsManager.updateDiagramInfo(
+                [
+                    {
+                        name: 'Зв\'язки',
+                        value: numberWithCommas(this.rawData.length)
+                    },
+                    {
+                        name: 'Унікальні зв\'язки',
+                        value: numberWithCommas(this.data.length)
+                    },
+                    {
+                        name: 'Особи',
+                        value: numberWithCommas(this.Graph.uniqueIds.length)
+                    }
+                ]
+            );
+        }
     }
-
+    
     updateProps(props) {
         this.props = props;
     }
