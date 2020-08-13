@@ -62,18 +62,23 @@ class commandsManager {
         this.diagramInfo.id = 'diagramInfo';
         this.buttonsContainer.prepend(this.diagramInfo);
 
+        this.usageHistory = document.createElement('div');
+        this.usageHistory.id = 'usageHistory';
+        this.buttonsContainer.appendChild(this.usageHistory);
     }
 
     setStyles() {
         this.buttonsContainer.style = `
             width: 100%;
-            padding-top: 20px;
             display: flex; 
             flex-direction: column;
             height: 100%;
             box-shadow: 2px 0px 5px 0px rgba(100,100,100,0.6);
-            background: white;`;
-
+            background: white;
+            
+            overflow-y: scroll;
+            `;
+        this.buttonsContainer.classList.add('disable-scrollbars');
         this.customUtils.style = `
             align-items: center;
             position: absolute;
@@ -82,7 +87,8 @@ class commandsManager {
             flex-direction: row;
             height: ${this.root.style.height};
             z-index: 15000;
-            transition: 0.9s;`;
+            transition: 0.9s;
+            `;
 
 
         this.expander.innerHTML = '<span>&nbsp;>&nbsp;</span>';
@@ -120,7 +126,6 @@ class commandsManager {
         if (!entriesArray) {
             return;
         }
-
         this.diagramInfo.innerHTML = '';
         entriesArray.forEach(entry => {
             let newEl = document.createElement('div');
@@ -136,9 +141,166 @@ class commandsManager {
             this.diagramInfo.appendChild(newEl);
         });
     }
+
+    updateHistory() {
+        if (!window.usageHistory || !window.usageHistory.forEach) {
+            return;
+        }
+        this.usageHistory.innerHTML = '';
+        window.usageHistory.forEach(viewEntry => {
+            let entryContainer = document.createElement('div');
+            let subjectsColumn = document.createElement('div');
+            let restoreButtonContainer = document.createElement('div');
+            let restoreButton = document.createElement('button');
+            restoreButton.innerText = 'Відновити';
+            viewEntry.entities.forEach((entity, index) => {
+
+                /*   Creating blank separate Elements first   */
+                let entityContainer = document.createElement('div');
+                let timeToAddAfterFirstEntityTypeString = '';
+                // if current element isn't first - we add chain element to the entityContainer before it
+                if (index !== 0) {
+                    let chainSrc = 'data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKWSURBVGhD7ZhLyE1RFMcvA/JIjJSIueRVjJWJUhgRJkYm8kiSGEuMkEh9ZaZkYuCRxABl5DEiJSIG8kooA4/f/5y1srvd757rnn2+u0/tX/1a++x7O+111t7n7n07mUwmGSZbbCXTcDPew7f4CR/iKVyErWAhXsU/fdyNSTMbn6AP+COexRN42/rcLZgsx9AHehqVWMgK/IH6/CsmOc006PeoQd7C6diL9ejJ7lNHaqxBH+BGdfThJep7D4qrGjTxSpxvUWig/fAE5lkcmqbf7b8sjoeqIX5bHJomEvHBDcIki7VpuiJV9/dEao+jiUTCp1xVnf+pXl+arsigieQ14jRdkar7eyK1E8prZEA00GV4AHvtpzyR2glNxBo5h8fxGWr7EpLcGtmPN3BlcfUP3f9a2exMRW0itfN1oq2RGCzBz6hKHMXt1pb6TGxA79N5xLmI6ntVXNUgRkW0HdfWXb8FN/EbOjMtXsELZbOYXr5efIuvM8nI8ePso+KqTMqf/kl1GKvR+3egjsJeyfNYixgVWWBRhynxBe+UzeJM7gv8nUUxAzehnxwvWRyamG+tcJuxy6LQmtiJ3Qta0/AFnkG9BEaO/8ngbydnHfpUeo6qnF+HiUYhZkW6n/h1XI76D+sIKgEnbEchRiL9fgMe4x7UGgi/F/13I2ZFqog++JAYifg0qZou0adTyERWpDVrpGrq5DUyCHmNDEHyifjWpOpeUyyKnxajESMRP0ussjgevrkUHyxGI0Yidy3OwbVlsyfbLH5H3/InhbbimipaAzpfdFdGU+og6nN5GZNlK/pA5RgeQiWgp+/9b3AuJs1hDJPp9ikuxVawGFWN16i3mabafdyLfhpsHfpjYVbZzGQyo6XT+Quao59ipH6tkQAAAABJRU5ErkJggg=='
+                    let chainDiv = document.createElement('div');
+                    let chainImage = document.createElement('img');
+                    chainImage.src = chainSrc;
+                    chainDiv.appendChild(chainImage);
+
+                    chainImage.style = `
+                        width: 20px;
+                        height: 20px;
+                    `;
+                    chainDiv.style = `
+                        width: 100%;
+                        display: flex; 
+                        justify-content: space-around;
+                        padding: 5px 0;
+                    `;
+
+                    subjectsColumn.appendChild(chainDiv);
+                } else {
+                    timeToAddAfterFirstEntityTypeString = typeof viewEntry.time == 'string' ? '   ' + viewEntry.time : '   Час не вказаний';
+                }
+
+                const displayImageSrcAttribute = typeof entity.imageString == 'string' ? entity.imageString : 'Час не вказаний';
+                const displayName = typeof entity.displayName == 'string' ? entity.displayName : 'Ім\'я не вказане';
+                let displayType = typeof entity.displayType == 'string' ? entity.displayType : 'Тип не вказаний';
+                displayType += timeToAddAfterFirstEntityTypeString;
+
+                let entityImageCol = document.createElement('div');
+                let entityImageElement = document.createElement('img');
+
+                let entityInfoCol = document.createElement('div');
+                let entityInfoType = document.createElement('p');
+                let entityInfoName = document.createElement('p');
+
+                /*  Creating corresponding Elements tree by using appendChild() in required order  */
+                entityInfoCol.appendChild(entityInfoType);
+                entityInfoCol.appendChild(entityInfoName);
+
+                entityImageCol.appendChild(entityImageElement);
+
+                entityContainer.appendChild(entityImageCol);
+                entityContainer.appendChild(entityInfoCol);
+
+                /* Filling Elements with corresponding values */
+                entityImageElement.src = 'data:image/png;base64, ' + displayImageSrcAttribute;
+                entityInfoName.innerText = displayName;
+                entityInfoType.innerText = displayType;
+
+                /*  Applying styles  */
+                entityContainer.style = `
+                    display: flex;
+                    flex-direction: row;
+                `;
+
+                entityImageCol.style = `
+                    padding: 5px;
+                    margin-right: 10px;
+                    background-color: white;
+                    border-radius: 10px;
+                `;
+                entityImageElement.style = `
+                    width: 55px;
+                    height: 55px;
+                `;
+
+                entityInfoCol.style = `
+                    display: flex;
+                    flex-direction: column;
+                `;
+                entityInfoType.style = `
+                    margin: 0;
+                    padding: 0;
+                    font-size: 11px;
+                `;
+                entityInfoName.style = `
+                    margin: 0;
+                    padding: 0;
+                    font-size: 16px;
+                `;
+                subjectsColumn.appendChild(entityContainer);
+            });
+            entryContainer.appendChild(subjectsColumn);
+            restoreButtonContainer.appendChild(restoreButton);
+            entryContainer.appendChild(restoreButtonContainer);
+
+            entryContainer.style = `
+                display: flex;
+                flex-direction: column;
+                padding: 10px;
+                margin-bottom: 20px;
+                border-radius: 10px;
+                background-color: #F0F0F0;
+            `;
+
+            subjectsColumn.style = `
+                display: flex;
+                flex-direction: column;
+                margin-right: 10px;
+            `;
+
+            restoreButtonContainer.style = `
+                margin-top: 10px;
+                height: 100%;
+                display: flex;
+            `;
+            restoreButton.style = `
+                margin-left: auto;
+                font-size: 16px;
+                padding: 10px;
+                border: none;
+                background-color: white;
+                border-radius: 10px;
+            `;
+            this.usageHistory.appendChild(entryContainer);
+            this.usageHistory.style = `
+                padding: 17px;
+            `;
+        });
+        
+        let offset = document.getElementById('expander').getBoundingClientRect().left - document.getElementById('customUtils').getBoundingClientRect().left - 3;
+        this.customUtils.style.left = `${-offset}px`;
+        let css = `
+        #customUtils:hover { 
+            margin-left: ${offset}px;
+            }
+        #customUtils.hover { 
+            margin-left: ${offset}px;
+            }`;
+        var style = document.createElement('style');
+        if (style.styleSheet) {
+            style.styleSheet.cssText = css;
+        } else {
+            style.appendChild(document.createTextNode(css));
+        }
+
+        document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
 }
 function numberWithCommas(x) {
-    return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+    return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
 }
 function addHider(domNode) {
     let hider = document.createElement('div');

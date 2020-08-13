@@ -256,7 +256,7 @@ class Renderer {
                     K0202Found = true;
             }
 
-            // if node wasn't found in preceding links - adding it to the Node Data Array
+            // if node wasn't found in preceding rows - adding it to the Node Data Array
             if (!K0201Found) {
                 nodeDataArray.push(createNodeObject(obj, 'NODE1'));
             }
@@ -342,7 +342,7 @@ class Renderer {
             LIGHTGREEN: '#89c864',
             YELLOW: '#f9d491',
             VIOLET: '#899dd0',
-            OCEAN: '#e1ffff'
+            OCEAN: '#46aee6'
         };
 
         function getImageColorHandler(node_form) {
@@ -1045,19 +1045,19 @@ class Renderer {
             },
                 _(go.Shape, {
                     strokeWidth: 3,
-                    stroke: '#ff78e2'
+                    stroke: '#a3417c'
                 }, new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     strokeWidth: 2,
                     toArrow: 'Block',
                     fill: 'white',
-                    stroke: '#ff78e2',
+                    stroke: '#a3417c',
                 }, new go.Binding('stroke', 'color')),
                 _(go.Shape, {
                     strokeWidth: 2,
                     fromArrow: 'Block',
                     fill: 'white',
-                    stroke: '#ff78e2'
+                    stroke: '#a3417c'
                 }, new go.Binding('stroke', 'color')),
                 {
                     toolTip: getLinkAdorment()

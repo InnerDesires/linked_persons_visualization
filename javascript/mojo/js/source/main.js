@@ -1,6 +1,9 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 function entryPoint(me) {
+    if(!window.usageHistory) {
+        window.usageHistory = [];
+    }
     function prepareVisOptions() {
         let is10Point2 = true;
         if (typeof me.addThresholdMenuItem == 'function') {
@@ -29,7 +32,7 @@ function entryPoint(me) {
     PROPS = prepareVisOptions();
     setStyles(me);
     addStartButton(me);
-
+    
     let buttons = [
         {
             innerHTML: 'Нова діаграма',
@@ -88,6 +91,7 @@ function entryPoint(me) {
     me.commandsManager = new commandsManager(me.domNode, buttons);
     me.commandsManager.getButton(2).deactivate();
     me.commandsManager.getButton(3).deactivate();
+    me.commandsManager.updateHistory();
     let dataLength;
     try {
         dataLength = me.dataInterface.getRawData(
@@ -119,6 +123,7 @@ function main(me, options) {
         switch (visType.type) {
             case 'singleEntity':
                 window.facade.showFrom(visType.mainEntityId);
+                me.commandsManager.updateHistory();
                 break;
             case 'chain':
                 maxPathCount = 10;
