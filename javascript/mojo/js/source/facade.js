@@ -226,7 +226,7 @@ class Facade {
         }
 
         if (firstIdElementIndex !== -1) {
-            keyNameArray.splice(firstIdElementIndex);
+            keyNameArray.splice(firstIdElementIndex, 1);
         }
 
         return keyNameArray.map((el) => {
