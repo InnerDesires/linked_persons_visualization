@@ -32,6 +32,7 @@
 
                 try {
                     this.addThresholdMenuItem();
+                    g_mstr_api = this;
                     entryPoint(this);
                 } catch (error) {
                     this.domNode.innerHTML = '';

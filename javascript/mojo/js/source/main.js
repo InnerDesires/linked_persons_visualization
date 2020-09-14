@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 function entryPoint(me) {
-    if(!window.usageHistory) {
+    if (!window.usageHistory) {
         window.usageHistory = [];
     }
     function prepareVisOptions() {
@@ -32,7 +32,7 @@ function entryPoint(me) {
     PROPS = prepareVisOptions();
     setStyles(me);
     addStartButton(me);
-    
+
     let buttons = [
         {
             innerHTML: 'Нова діаграма',
@@ -116,19 +116,51 @@ function entryPoint(me) {
 
 function main(me, options) {
     function showDiagram(visType) {
-        let maxPathCount;
-        let searchType;
         let startButton;
         toggleButtons(true);
         switch (visType.type) {
             case 'singleEntity':
-                window.facade.showFrom(visType.mainEntityId);
+                /*
+                    While having only main entity id, we have to get the image string for this entity and it's name and type.
+                    These values are being calculated inside Renderer class for each required id. 
+                */
+                window.facade.showFrom(visType.mainEntityId, (res) => {
+                    if (options && (options.type === 'autoload')) {
+                        return;
+                    }
+                    window.usageHistory.unshift({
+                        time: getTime(),
+                        entities: [
+                            {
+                                imageString: res[visType.mainEntityId].imageString,
+                                displayName: res[visType.mainEntityId].displayName,
+                            }
+                        ],
+                        visType
+                    });
+                });
                 me.commandsManager.updateHistory();
                 break;
             case 'chain':
-                maxPathCount = 10;
-                searchType = 'bfs';
-                window.facade.showFromTo(visType.mainEntityId, visType.secondEntityId, maxPathCount, searchType);
+                window.facade.showFromTo(visType.mainEntityId, visType.secondEntityId, res => {
+                    if (options && (options.type === 'autoload')) {
+                        return;
+                    }
+                    window.usageHistory.unshift({
+                        time: getTime(),
+                        entities: [
+                            {
+                                imageString: res[visType.mainEntityId].imageString,
+                                displayName: res[visType.mainEntityId].displayName
+                            }, {
+                                imageString: res[visType.secondEntityId].imageString,
+                                displayName: res[visType.secondEntityId].displayName
+                            }
+                        ],
+                        visType
+                    });
+                });
+                me.commandsManager.updateHistory();
                 break;
             case 'all':
                 window.facade.showAll();
@@ -139,6 +171,12 @@ function main(me, options) {
                 startButton.style.display = 'block';
                 return;
         }
+    }
+
+    function getTime() {
+        let time = new Date();
+        return ('0' + time.getHours()).slice(-2) + ':' +
+            ('0' + time.getMinutes()).slice(-2);
     }
 
     function getMstrData() {
@@ -152,30 +190,6 @@ function main(me, options) {
         }
     }
 
-    function isMstrObjectsEqual(a, b) {
-        if (!a.headers || !a.values || !b.headers || !b.values) {
-            return false;
-        }
-        if (a.headers.length !== b.headers.length || a.values.length !== b.values.length) {
-            return false;
-        }
-
-        for (let i = 0; i < a.headers.length; i++) {
-            if (a.headers[i].name !== b.headers[i].name) {
-                return false;
-            }
-        }
-
-        for (let i = 0; i < a.values.length; i++) {
-            if (a.values[i].rv !== b.values[i].rv) {
-                return false;
-            }
-            if (a.values[i].threshold !== b.values[i].threshold) {
-                return false;
-            }
-        }
-        return true;
-    }
     function resolveError() {
         Swal.fire(
             {
@@ -260,7 +274,10 @@ function main(me, options) {
                 }
                 showDiagram(visType);
             });
-    } else {
+    } else if (options && options.buttonRestore && options.visType) {
+        window.visType = options.visType;
+        showDiagram(window.visType);
+    } else if (window.visType) {
         showDiagram(window.visType);
     }
 }

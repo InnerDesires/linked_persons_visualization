@@ -56,7 +56,7 @@ class Facade {
             );
         }
     }
-    
+
     updateProps(props) {
         this.props = props;
     }
@@ -79,7 +79,7 @@ class Facade {
         this.renderer = new Renderer(dataToUse, this.HTMLElementId);
     }
 
-    showFrom(mainEntityId) {
+    showFrom(mainEntityId, usageHistoryCallback) {
 
 
         if (typeof mainEntityId !== 'string') return;
@@ -96,7 +96,10 @@ class Facade {
             return (currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE1.ID]) && currentCluster.includes(row[DECOMPOSED_ATTRIBUTES.NODE2.ID]));
         });
 
-        let currentGraph = new Graph(this.currentData.map(el => { return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] }; }));
+        let currentGraph = new Graph(this.currentData.map(el => {
+            return { from: el[DECOMPOSED_ATTRIBUTES.NODE1.ID], to: el[DECOMPOSED_ATTRIBUTES.NODE2.ID] };
+        }));
+
         let nodesToShow = currentGraph.findOneEdgeChildren(mainEntityId);
 
         nodesToShow.push(mainEntityId);
@@ -106,11 +109,11 @@ class Facade {
         });
 
 
-        this.renderer = new Renderer(this.currentData, this.HTMLElementId, mainEntityId, nodesToShowDict);
+        this.renderer = new Renderer(this.currentData, this.HTMLElementId, mainEntityId, nodesToShowDict, { lookupIds: [mainEntityId] }, usageHistoryCallback);
 
     }
 
-    showFromTo(mainEntityId, secondEntityId) {
+    showFromTo(mainEntityId, secondEntityId, usageHistoryCallback) {
         this.deleteDiagram();
         this.mainEntityId = mainEntityId;
         delete this.renderer;
@@ -137,7 +140,7 @@ class Facade {
                 title: 'Помилка при виборі осіб'
             });
         }
-        this.renderer = new Renderer(dataToUse, this.HTMLElementId, mainEntityId, includedNodes, { mode: 'chain' });
+        this.renderer = new Renderer(dataToUse, this.HTMLElementId, mainEntityId, includedNodes, { mode: 'chain', lookupIds: [mainEntityId, secondEntityId] }, usageHistoryCallback);
     }
 
     deleteDiagram() {
