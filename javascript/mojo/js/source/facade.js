@@ -63,7 +63,7 @@ class Facade {
     showAll() {
         this.deleteDiagram();
         delete this.renderer;
-        this.renderer = new Renderer(this.data, this.HTMLElementId, null, null, { mode: 'all' });
+        this.renderer = new Renderer(this.data, this.HTMLElementId, null, null, { mode: 'all', lookupIds: [] });
     }
 
     showAllNodesFrom(mainEntityId) {

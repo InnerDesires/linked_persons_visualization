@@ -358,9 +358,10 @@ class Renderer {
                 addNode('NODE2');
             }
         });
-        
-        usageHistoryCallback(usageHistoryData);
 
+        if (usageHistoryCallback) {
+            usageHistoryCallback(usageHistoryData);
+        }
         if (options.mode === 'chain') {
             this.diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
             this.diagram.startTransaction();

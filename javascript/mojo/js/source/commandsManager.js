@@ -273,7 +273,12 @@ class commandsManager {
             restoreButtonContainer.appendChild(restoreButton);
             entryContainer.appendChild(restoreButtonContainer);
             restoreButton.addEventListener('click', () => {
-                main(g_mstr_api, { buttonRestore: true, visType: viewEntry.visType });
+                try {
+                    main(g_mstr_api, { buttonRestore: true, visType: viewEntry.visType });
+
+                } catch (error) {
+                    catchError(error);
+                }
             });
 
             entryContainer.style = `

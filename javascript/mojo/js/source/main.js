@@ -169,7 +169,7 @@ function main(me, options) {
                 toggleButtons(false);
                 startButton = document.getElementById('customStartButton');
                 startButton.style.display = 'block';
-                return;
+                break;
         }
     }
 
@@ -190,7 +190,7 @@ function main(me, options) {
         }
     }
 
-    function resolveError() {
+    function resolveMinParametersCountError() {
         Swal.fire(
             {
                 icon: 'error',
@@ -200,6 +200,7 @@ function main(me, options) {
         window.visType = null;
         return;
     }
+
     function checkForObligatoryParams(obj) {
         function undef(a) {
             return typeof a === 'undefined';
@@ -241,9 +242,10 @@ function main(me, options) {
     let parsedData = processData(me, dataArr);
 
     if (!checkForObligatoryParams(parsedData[0])) {
-        resolveError();
+        resolveMinParametersCountError();
         return;
     }
+
     if (typeof window.facade !== 'object') {
         window.facade = new Facade(parsedData, me.domNode.id, PROPS, me);
     } else if (window.facade && window.facade.updateData) {
@@ -342,4 +344,16 @@ function setStyles(me) {
     me.domNode.style.justifyContent = 'center';
     me.domNode.style.overflowX = 'scroll';
     me.domNode.style.overflowY = 'scroll';
+}
+
+function catchError(error) {
+    g_mstr_api.domNode.innerHTML = '';
+    g_mstr_api.domNode.parentNode.style.userSelect = '';
+    g_mstr_api.domNode.style.userSelect = 'all';
+    let err = document.createElement('p');
+    err.innerHTML = 'Помилка: ' + error;
+    let stack = document.createElement('p');
+    stack.innerHTML = error.stack;
+    g_mstr_api.domNode.appendChild(err);
+    g_mstr_api.domNode.appendChild(stack);
 }

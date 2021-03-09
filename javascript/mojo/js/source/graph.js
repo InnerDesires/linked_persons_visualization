@@ -47,6 +47,11 @@ class Graph {
 
     findAvailableVertices(initialVertexId) {
         if (!initialVertexId || typeof initialVertexId !== 'string' || !this.uniqueIds.includes(initialVertexId)) {
+            Swal.fire(
+                {
+                    title: 'Помилка при відображенні діаграми',
+                    text: 'Поточний ідентифікатор остновної сутності відсутній у даних. Можливо, він зник після застосування фільтрів.'
+                });
             throw new Error('@findAvailableVertices: Wrong intialVertexId');
         }
 
@@ -72,7 +77,7 @@ class Graph {
 
     findAvailableVerticesFromToNew(initialVertexId, endingVertexId, maxPathCount = 5) {
         let cluster = this.findAvailableVertices(initialVertexId);
-        if (!(cluster.includes(initialVertexId) && cluster.includes(endingVertexId))){
+        if (!(cluster.includes(initialVertexId) && cluster.includes(endingVertexId))) {
             window.visType = null;
             throw new Error('Vertices dont belong to the same cluster');
         }
